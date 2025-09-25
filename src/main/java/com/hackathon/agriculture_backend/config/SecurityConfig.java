@@ -79,34 +79,42 @@ public class SecurityConfig {
     
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        log.info("Setting up CORS configuration...");
+        log.info("Frontend URL from environment: {}", frontendUrl);
+        
         CorsConfiguration configuration = new CorsConfiguration();
         
-        // Allow specific origins for production and development
-        configuration.setAllowedOrigins(Arrays.asList(
+        // Explicit list of allowed origins
+        java.util.List<String> allowedOrigins = Arrays.asList(
             "http://localhost:3000",
             "http://127.0.0.1:3000",
-            frontendUrl,
+            "https://agriculture-frontend-two.vercel.app",  // Main production URL
             "https://agriculture-frontend.vercel.app",
             "https://agriculture-frontend-btleirx65.vercel.app",
-            "https://agriculture-frontend-two.vercel.app"  // Correct Vercel URL
-        ));
+            frontendUrl  // From environment variable
+        );
         
-        // Allow origin patterns for development
+        log.info("Allowed CORS origins: {}", allowedOrigins);
+        configuration.setAllowedOrigins(allowedOrigins);
+        
+        // Allow origin patterns for additional flexibility
         configuration.setAllowedOriginPatterns(Arrays.asList(
             "http://localhost:*",
             "http://127.0.0.1:*",
-            "https://accounts.google.com",
-            "https://*.vercel.app"
+            "https://*.vercel.app",
+            "https://accounts.google.com"
         ));
         
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "Access-Control-Allow-Origin"));
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
+        
+        log.info("CORS configuration completed successfully");
         return source;
     }
     
