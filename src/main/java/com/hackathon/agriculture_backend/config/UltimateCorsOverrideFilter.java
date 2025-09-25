@@ -44,10 +44,10 @@ public class UltimateCorsOverrideFilter implements Filter {
         if (isAllowedOrigin) {
             log.error("ULTIMATE CORS OVERRIDE - ALLOWED ORIGIN DETECTED: {}", origin);
             
-            // Completely override any existing headers
+            // Completely override any existing headers including Railway's
             httpResponse.reset();
             
-            // Set CORS headers
+            // Set CORS headers with explicit values to override Railway
             httpResponse.setHeader("Access-Control-Allow-Origin", origin);
             httpResponse.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
             httpResponse.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers");
@@ -56,7 +56,7 @@ public class UltimateCorsOverrideFilter implements Filter {
             httpResponse.setHeader("Access-Control-Expose-Headers", "Authorization, Content-Type, Access-Control-Allow-Origin");
             httpResponse.setHeader("Vary", "Origin");
             
-            // Handle preflight requests
+            // Handle preflight requests immediately
             if ("OPTIONS".equalsIgnoreCase(method)) {
                 log.error("ULTIMATE CORS OVERRIDE - HANDLING PREFLIGHT REQUEST FOR: {}", origin);
                 httpResponse.setStatus(HttpServletResponse.SC_OK);
