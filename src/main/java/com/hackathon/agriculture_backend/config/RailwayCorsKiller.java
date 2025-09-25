@@ -99,18 +99,8 @@ public class RailwayCorsKiller implements Filter {
                 }
                 
                 @Override
-                public String encodeRedirectUrl(String url) {
-                    return original.encodeRedirectUrl(url);
-                }
-                
-                @Override
                 public String encodeURL(String url) {
                     return original.encodeURL(url);
-                }
-                
-                @Override
-                public String encodeUrl(String url) {
-                    return original.encodeUrl(url);
                 }
                 
                 @Override
