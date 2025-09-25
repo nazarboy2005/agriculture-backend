@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "mvn spring-boot:run",
+    "startCommand": "java -jar target/agriculture-backend-*.jar",
     "healthcheckPath": "/api/actuator/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
