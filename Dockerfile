@@ -20,7 +20,10 @@ RUN ./mvnw dependency:go-offline -B
 COPY src src
 
 # Build the application
-RUN ./mvnw clean package -DskipTests
+RUN ./mvnw clean package -DskipTests -X
+
+# Debug: List what was created
+RUN ls -la target/
 
 # Runtime stage
 FROM amazoncorretto:17-alpine
