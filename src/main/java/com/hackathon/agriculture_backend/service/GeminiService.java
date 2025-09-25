@@ -10,8 +10,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import jakarta.annotation.PostConstruct;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +37,20 @@ public class GeminiService {
     @Value("${app.gemini.temperature}")
     private float temperature;
     
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Value("${app.gemini.timeout:60000}")
+    private int timeout;
+    
+    private RestTemplate restTemplate;
+    
+    @PostConstruct
+    public void init() {
+        this.restTemplate = new RestTemplate();
+        // Configure timeout
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        factory.setConnectTimeout(java.time.Duration.ofMillis(timeout));
+        factory.setConnectionRequestTimeout(java.time.Duration.ofMillis(timeout));
+        this.restTemplate.setRequestFactory(factory);
+    }
     
     private String callGeminiAPI(String prompt) {
         try {
@@ -48,8 +63,8 @@ public class GeminiService {
                     apiKey = envApiKey;
                     log.info("Using Gemini API key from environment variable");
                 } else {
-                    log.warn("No Gemini API key found, using mock response");
-                    return generateMockResponseForPrompt(prompt);
+                    log.warn("No Gemini API key found, using enhanced mock response");
+                    return generateEnhancedMockResponseForPrompt(prompt);
                 }
             }
             
@@ -119,7 +134,7 @@ public class GeminiService {
                 String aiResponse = callGeminiAPI(fullPrompt);
                 
                 // Check if we got a real AI response or a fallback
-                if (aiResponse != null && !aiResponse.contains("I apologize, but I'm having trouble processing")) {
+                if (aiResponse != null && !aiResponse.contains("I apologize, but I'm having trouble processing") && !aiResponse.trim().isEmpty()) {
                     log.info("Successfully received AI response from Gemini API");
                     return aiResponse;
                 } else {
@@ -453,6 +468,272 @@ public class GeminiService {
                    "🌡️ Risk Level: LOW to MEDIUM\n" +
                    "📊 ETC: 3.0mm daily average";
         }
+    }
+    
+    /**
+     * Enhanced mock response that provides more dynamic and contextual answers
+     */
+    private String generateEnhancedMockResponseForPrompt(String prompt) {
+        String lowerPrompt = prompt.toLowerCase();
+        
+        // Extract user question from the prompt
+        String userQuestion = extractUserQuestion(prompt);
+        String lowerQuestion = userQuestion.toLowerCase();
+        
+        // Soil health recommendations
+        if (lowerQuestion.contains("soil") || lowerQuestion.contains("health")) {
+            return generateSoilHealthResponse(userQuestion);
+        }
+        
+        // Fertilizer recommendations
+        if (lowerQuestion.contains("fertilizer") || lowerQuestion.contains("nutrient")) {
+            return generateFertilizerResponse(userQuestion);
+        }
+        
+        // Irrigation advice
+        if (lowerQuestion.contains("irrigation") || lowerQuestion.contains("water")) {
+            return generateIrrigationResponse(userQuestion);
+        }
+        
+        // Weather advice
+        if (lowerQuestion.contains("weather") || lowerQuestion.contains("temperature") || lowerQuestion.contains("heat")) {
+            return generateWeatherResponse(userQuestion);
+        }
+        
+        // Crop management
+        if (lowerQuestion.contains("crop") || lowerQuestion.contains("plant") || lowerQuestion.contains("harvest")) {
+            return generateCropResponse(userQuestion);
+        }
+        
+        // Pest and disease management
+        if (lowerQuestion.contains("pest") || lowerQuestion.contains("disease") || lowerQuestion.contains("insect")) {
+            return generatePestResponse(userQuestion);
+        }
+        
+        // General agricultural advice
+        return generateGeneralAgriculturalResponse(userQuestion);
+    }
+    
+    private String extractUserQuestion(String prompt) {
+        // Extract the user question from the full prompt
+        String[] lines = prompt.split("\n");
+        for (String line : lines) {
+            if (line.contains("User Question:") || line.contains("Question:")) {
+                return line.substring(line.indexOf(":") + 1).trim();
+            }
+        }
+        // If no specific question found, return the last part of the prompt
+        return prompt.substring(prompt.lastIndexOf("\n") + 1).trim();
+    }
+    
+    private String generateSoilHealthResponse(String question) {
+        return "🌍 **SOIL HEALTH RECOMMENDATIONS**\n\n" +
+               "Based on your question about soil health, here are my professional recommendations:\n\n" +
+               "**🔍 Soil Assessment:**\n" +
+               "- Test soil pH (target: 6.0-7.0)\n" +
+               "- Check organic matter content (aim for 3-5%)\n" +
+               "- Analyze nutrient levels (N, P, K, micronutrients)\n" +
+               "- Assess soil structure and drainage\n\n" +
+               "**🌱 Improvement Strategies:**\n" +
+               "- Add compost: 5-10 tons per hectare annually\n" +
+               "- Use cover crops to prevent erosion\n" +
+               "- Implement crop rotation (3-4 year cycle)\n" +
+               "- Apply organic matter regularly\n" +
+               "- Consider no-till farming practices\n\n" +
+               "**📊 Monitoring Schedule:**\n" +
+               "- Test soil every 2-3 years\n" +
+               "- Monitor pH monthly during growing season\n" +
+               "- Check soil moisture weekly\n" +
+               "- Observe plant health indicators\n\n" +
+               "**💡 Pro Tips:**\n" +
+               "- Healthy soil = healthy plants = better yields\n" +
+               "- Invest in soil health for long-term sustainability\n" +
+               "- Consider biological soil amendments\n\n" +
+               "*Remember: Soil health is the foundation of successful farming!*";
+    }
+    
+    private String generateFertilizerResponse(String question) {
+        return "🌿 **FERTILIZER RECOMMENDATIONS**\n\n" +
+               "Here's my professional fertilizer guidance based on your question:\n\n" +
+               "**🧪 Soil Testing First:**\n" +
+               "- Complete soil analysis before applying fertilizers\n" +
+               "- Test for N, P, K, pH, and micronutrients\n" +
+               "- Consider soil type and crop requirements\n\n" +
+               "**🌱 Nutrient Management:**\n" +
+               "- **Nitrogen (N)**: 120-180 kg/ha (split applications)\n" +
+               "- **Phosphorus (P2O5)**: 60-100 kg/ha (pre-planting)\n" +
+               "- **Potassium (K2O)**: 100-150 kg/ha (growth stages)\n" +
+               "- **Micronutrients**: Zn, Mn, Fe as needed\n\n" +
+               "**📅 Application Timing:**\n" +
+               "- Pre-planting: Apply P and 1/3 N\n" +
+               "- Side-dressing: N at 4-6 week intervals\n" +
+               "- Foliar feeding: Micronutrients during critical stages\n\n" +
+               "**🌿 Organic Alternatives:**\n" +
+               "- Compost: 10-20 tons per hectare\n" +
+               "- Manure: Well-aged, 5-10 tons per hectare\n" +
+               "- Green manure crops: Legumes for nitrogen fixation\n" +
+               "- Biofertilizers: Rhizobium, Azotobacter\n\n" +
+               "**⚠️ Important Notes:**\n" +
+               "- Avoid over-fertilization\n" +
+               "- Consider environmental impact\n" +
+               "- Monitor plant response\n" +
+               "- Keep detailed application records\n\n" +
+               "*Proper fertilization leads to optimal crop growth and yield!*";
+    }
+    
+    private String generateIrrigationResponse(String question) {
+        return "💧 **IRRIGATION MANAGEMENT**\n\n" +
+               "Based on your irrigation question, here are my expert recommendations:\n\n" +
+               "**🌊 Water Management Strategy:**\n" +
+               "- Monitor soil moisture regularly (target: 60-80% field capacity)\n" +
+               "- Use drip irrigation for water efficiency (30% savings)\n" +
+               "- Schedule irrigation during early morning (5-7 AM)\n" +
+               "- Adjust frequency based on weather conditions\n\n" +
+               "**📊 Irrigation Scheduling:**\n" +
+               "- **Frequency**: 3-4 times per week during peak season\n" +
+               "- **Duration**: 45-60 minutes per session\n" +
+               "- **Depth**: 15-20 cm for deep root penetration\n" +
+               "- **Rate**: 15-20 mm per irrigation cycle\n\n" +
+               "**🌡️ Weather-Based Adjustments:**\n" +
+               "- **Hot weather**: Increase frequency by 20%\n" +
+               "- **Rainy periods**: Reduce or pause irrigation\n" +
+               "- **High humidity**: Decrease watering frequency\n" +
+               "- **Windy conditions**: Avoid overhead irrigation\n\n" +
+               "**💡 Water Conservation Tips:**\n" +
+               "- Install soil moisture sensors\n" +
+               "- Use mulching to retain moisture\n" +
+               "- Implement precision irrigation systems\n" +
+               "- Monitor evapotranspiration rates\n\n" +
+               "**📈 Expected Benefits:**\n" +
+               "- 25-30% water savings\n" +
+               "- 15-20% yield increase\n" +
+               "- Improved water use efficiency\n" +
+               "- Better crop quality\n\n" +
+               "*Efficient irrigation is key to sustainable farming!*";
+    }
+    
+    private String generateWeatherResponse(String question) {
+        return "🌤️ **WEATHER IMPACT ANALYSIS**\n\n" +
+               "Here's my weather-based agricultural advice:\n\n" +
+               "**🌡️ Temperature Management:**\n" +
+               "- **High temperatures**: Increase irrigation, provide shade\n" +
+               "- **Cold snaps**: Protect sensitive crops with covers\n" +
+               "- **Frost risk**: Monitor forecasts, use frost protection\n" +
+               "- **Heat stress**: Watch for wilting, adjust watering\n\n" +
+               "**💧 Precipitation Planning:**\n" +
+               "- **Heavy rain**: Improve drainage, prevent waterlogging\n" +
+               "- **Drought conditions**: Implement water conservation\n" +
+               "- **Hail risk**: Consider protective netting\n" +
+               "- **Storm preparation**: Secure equipment, protect crops\n\n" +
+               "**🌪️ Extreme Weather Protection:**\n" +
+               "- **Wind damage**: Use windbreaks, stake plants\n" +
+               "- **Flooding**: Improve drainage systems\n" +
+               "- **Heat waves**: Increase irrigation frequency\n" +
+               "- **Cold fronts**: Use row covers, greenhouses\n\n" +
+               "**📊 Weather Monitoring:**\n" +
+               "- Check forecasts daily\n" +
+               "- Use weather stations for local data\n" +
+               "- Monitor soil temperature and moisture\n" +
+               "- Track growing degree days\n\n" +
+               "**🎯 Action Plan:**\n" +
+               "- Prepare for weather extremes\n" +
+               "- Adjust farming practices accordingly\n" +
+               "- Protect crops from weather stress\n" +
+               "- Optimize irrigation based on conditions\n\n" +
+               "*Weather awareness is crucial for successful farming!*";
+    }
+    
+    private String generateCropResponse(String question) {
+        return "🌾 **CROP MANAGEMENT GUIDANCE**\n\n" +
+               "Here's my comprehensive crop management advice:\n\n" +
+               "**🌱 Planting Considerations:**\n" +
+               "- **Timing**: Plant during optimal weather windows\n" +
+               "- **Spacing**: Follow recommended plant spacing\n" +
+               "- **Depth**: Plant seeds at proper depth\n" +
+               "- **Variety selection**: Choose disease-resistant varieties\n\n" +
+               "**🌿 Growth Stage Management:**\n" +
+               "- **Vegetative phase**: Focus on root development\n" +
+               "- **Flowering phase**: Ensure proper pollination\n" +
+               "- **Fruiting phase**: Balance water and nutrients\n" +
+               "- **Maturity**: Monitor for optimal harvest timing\n\n" +
+               "**🌱 Nutrient Requirements:**\n" +
+               "- **Nitrogen**: For vegetative growth\n" +
+               "- **Phosphorus**: For root and flower development\n" +
+               "- **Potassium**: For fruit quality and disease resistance\n" +
+               "- **Micronutrients**: For overall plant health\n\n" +
+               "**📊 Monitoring Protocol:**\n" +
+               "- **Daily**: Check for pests and diseases\n" +
+               "- **Weekly**: Assess growth and development\n" +
+               "- **Monthly**: Test soil and plant tissue\n" +
+               "- **Seasonally**: Evaluate overall performance\n\n" +
+               "**🎯 Harvest Optimization:**\n" +
+               "- **Timing**: Harvest at peak maturity\n" +
+               "- **Quality**: Maintain post-harvest standards\n" +
+               "- **Storage**: Proper handling and storage\n" +
+               "- **Marketing**: Plan for market timing\n\n" +
+               "*Successful crop management requires attention to detail and timing!*";
+    }
+    
+    private String generatePestResponse(String question) {
+        return "🐛 **PEST & DISEASE MANAGEMENT**\n\n" +
+               "Here's my integrated pest management strategy:\n\n" +
+               "**🔍 Monitoring & Scouting:**\n" +
+               "- **Frequency**: Weekly field inspections\n" +
+               "- **Method**: Systematic sampling of 10% of plants\n" +
+               "- **Documentation**: Record pest populations and damage\n" +
+               "- **Thresholds**: Act when economic thresholds are exceeded\n\n" +
+               "**🌿 Cultural Practices:**\n" +
+               "- **Crop rotation**: Break pest life cycles\n" +
+               "- **Sanitation**: Remove crop residues and weeds\n" +
+               "- **Resistant varieties**: Plant pest-resistant cultivars\n" +
+               "- **Field hygiene**: Maintain clean growing areas\n\n" +
+               "**🦟 Biological Control:**\n" +
+               "- **Beneficial insects**: Ladybugs, lacewings, parasitic wasps\n" +
+               "- **Microbial controls**: Bacillus thuringiensis\n" +
+               "- **Habitat management**: Maintain beneficial insect habitats\n" +
+               "- **Natural predators**: Encourage natural pest control\n\n" +
+               "**🧪 Chemical Control (Last Resort):**\n" +
+               "- **Selective pesticides**: Target-specific products\n" +
+               "- **Rotation**: Alternate chemical classes\n" +
+               "- **Timing**: Apply during optimal pest life stages\n" +
+               "- **Safety**: Follow label instructions carefully\n\n" +
+               "**🌱 Disease Prevention:**\n" +
+               "- **Fungicide applications**: Preventive treatments\n" +
+               "- **Air circulation**: Improve ventilation\n" +
+               "- **Water management**: Avoid overhead irrigation\n" +
+               "- **Resistant varieties**: Choose disease-resistant crops\n\n" +
+               "*Integrated pest management is the most sustainable approach!*";
+    }
+    
+    private String generateGeneralAgriculturalResponse(String question) {
+        return "🌾 **COMPREHENSIVE AGRICULTURAL ADVICE**\n\n" +
+               "Here's my professional guidance for your farming question:\n\n" +
+               "**🌱 Sustainable Farming Practices:**\n" +
+               "- **Soil health**: Maintain organic matter and structure\n" +
+               "- **Water conservation**: Use efficient irrigation methods\n" +
+               "- **Biodiversity**: Promote beneficial insects and wildlife\n" +
+               "- **Resource efficiency**: Optimize inputs and outputs\n\n" +
+               "**📊 Farm Management:**\n" +
+               "- **Record keeping**: Maintain detailed farm records\n" +
+               "- **Financial planning**: Track costs and profits\n" +
+               "- **Technology adoption**: Use precision agriculture tools\n" +
+               "- **Market analysis**: Stay informed about crop prices\n\n" +
+               "**🌿 Best Practices:**\n" +
+               "- **Crop rotation**: Implement 3-4 year cycles\n" +
+               "- **Cover crops**: Use during off-seasons\n" +
+               "- **Integrated pest management**: Combine multiple control methods\n" +
+               "- **Quality control**: Maintain consistent standards\n\n" +
+               "**💡 Innovation & Technology:**\n" +
+               "- **Precision agriculture**: GPS-guided equipment\n" +
+               "- **Remote sensing**: Satellite and drone monitoring\n" +
+               "- **Data analytics**: Use farm data for decisions\n" +
+               "- **Automation**: Implement smart farming systems\n\n" +
+               "**🎯 Success Factors:**\n" +
+               "- **Continuous learning**: Stay updated with new practices\n" +
+               "- **Networking**: Connect with other farmers\n" +
+               "- **Adaptation**: Adjust to changing conditions\n" +
+               "- **Sustainability**: Plan for long-term success\n\n" +
+               "*Successful farming requires knowledge, planning, and adaptation!*";
     }
     
     private String generateSoilHealthAdvice(Farmer farmer) {

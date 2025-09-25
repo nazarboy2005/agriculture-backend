@@ -63,3 +63,4 @@ public class RecommendationDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Instant updatedAt;
 }
+

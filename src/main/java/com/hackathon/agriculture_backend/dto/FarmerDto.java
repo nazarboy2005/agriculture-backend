@@ -49,3 +49,4 @@ public class FarmerDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Instant updatedAt;
 }
+

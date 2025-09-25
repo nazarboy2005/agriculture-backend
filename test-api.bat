@@ -31,3 +31,4 @@ echo 🚀 To start the application:
 echo    mvn spring-boot:run
 echo.
 echo 📱 The application will be available at: http://localhost:8080/api
+

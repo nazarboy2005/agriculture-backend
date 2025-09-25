@@ -79,3 +79,4 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error("External API error: " + ex.getMessage()));
     }
 }
+

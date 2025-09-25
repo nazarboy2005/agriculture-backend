@@ -20,3 +20,4 @@ public interface CropRepository extends JpaRepository<Crop, Long> {
     @Query("SELECT c FROM Crop c WHERE c.isActive = true ORDER BY c.name")
     List<Crop> findAllActiveOrderByName();
 }
+

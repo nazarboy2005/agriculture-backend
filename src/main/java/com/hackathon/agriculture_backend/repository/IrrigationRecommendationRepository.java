@@ -47,3 +47,4 @@ public interface IrrigationRecommendationRepository extends JpaRepository<Irriga
     Long countActiveFarmersByDateRange(@Param("startDate") LocalDate startDate, 
                                       @Param("endDate") LocalDate endDate);
 }
+

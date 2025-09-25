@@ -38,3 +38,4 @@ public class Crop {
     @Column(name = "is_active")
     private Boolean isActive = true;
 }
+

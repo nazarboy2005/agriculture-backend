@@ -77,6 +77,11 @@ Create a `.env` file or set environment variables:
    export TWILIO_PHONE_NUMBER=+1234567890
    ```
 
+4. **Plant.id API Configuration** (Get from https://plant.id/)
+   ```bash
+   export PLANTID_API_KEYS=your_plantid_api_key_1,your_plantid_api_key_2,your_plantid_api_key_3
+   ```
+
 **Complete Environment Setup:**
 ```bash
 # Database
@@ -89,6 +94,9 @@ export WEATHER_API_KEY=5d43153239d679121f3c35bbb08ca0bb
 export TWILIO_ACCOUNT_SID=your-twilio-account-sid
 export TWILIO_AUTH_TOKEN=your-twilio-auth-token
 export TWILIO_PHONE_NUMBER=+1234567890
+
+# Plant.id API (for disease detection)
+export PLANTID_API_KEYS=your_plantid_api_key_1,your_plantid_api_key_2,your_plantid_api_key_3
 ```
 
 ### 3. Run the Application
@@ -132,6 +140,14 @@ Your Supabase database is already set up with the following connection:
 
 Just set: `export DB_PASSWORD=your-supabase-password`
 
+### 4. Plant.id API Setup (for Disease Detection)
+1. Go to [Plant.id](https://plant.id/)
+2. Sign up for a free account
+3. Navigate to "API Keys" section
+4. Copy your API key(s)
+5. For multiple keys (recommended for rotation), separate them with commas
+6. Set environment variable: `export PLANTID_API_KEYS=key1,key2,key3`
+
 ## 📱 API Endpoints
 
 ### Farmer Management
@@ -170,6 +186,12 @@ GET    /api/v1/admin/farmers/{id}/water-savings # Get water savings
 GET    /api/v1/admin/data/export          # Export data
 GET    /api/v1/admin/stats/farmers         # Get farmer statistics
 GET    /api/v1/admin/stats/sms-opt-in     # Get SMS opt-in statistics
+```
+
+### Disease Detection
+```
+POST   /api/disease/detect                # Upload image for disease detection
+GET    /api/disease/history               # Get user's detection history
 ```
 
 ## 🔧 Configuration

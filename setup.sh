@@ -89,3 +89,4 @@ echo "   export WEATHER_API_KEY=your-openweathermap-api-key"
 echo "   export TWILIO_ACCOUNT_SID=your-twilio-account-sid"
 echo "   export TWILIO_AUTH_TOKEN=your-twilio-auth-token"
 echo "   export TWILIO_PHONE_NUMBER=+1234567890"
+

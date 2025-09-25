@@ -1,22 +1,24 @@
 package com.hackathon.agriculture_backend.service;
 
+import com.hackathon.agriculture_backend.model.Token;
+import com.hackathon.agriculture_backend.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class TokenService {
     
-    private final Map<String, TokenData> tokenStore = new ConcurrentHashMap<>();
+    private final TokenRepository tokenRepository;
     private final SecureRandom secureRandom = new SecureRandom();
     
     @Value("${app.token.email-confirmation.expiry:24}")
@@ -25,42 +27,64 @@ public class TokenService {
     @Value("${app.token.password-reset.expiry:1}")
     private int passwordResetExpiryHours;
     
+    @Transactional
     public String generateEmailConfirmationToken(String email) {
+        // Delete any existing tokens for this email and type
+        tokenRepository.deleteByEmailAndType(email, Token.TokenType.EMAIL_CONFIRMATION);
+        
         String token = generateSecureToken();
         LocalDateTime expiry = LocalDateTime.now().plusHours(emailConfirmationExpiryHours);
         
-        tokenStore.put(token, new TokenData(email, TokenType.EMAIL_CONFIRMATION, expiry));
+        Token tokenEntity = new Token();
+        tokenEntity.setToken(token);
+        tokenEntity.setEmail(email);
+        tokenEntity.setType(Token.TokenType.EMAIL_CONFIRMATION);
+        tokenEntity.setExpiry(expiry);
+        
+        tokenRepository.save(tokenEntity);
         log.info("Generated email confirmation token for: {}", email);
         
         return token;
     }
     
+    @Transactional
     public String generatePasswordResetToken(String email) {
+        // Delete any existing tokens for this email and type
+        tokenRepository.deleteByEmailAndType(email, Token.TokenType.PASSWORD_RESET);
+        
         String token = generateSecureToken();
         LocalDateTime expiry = LocalDateTime.now().plusHours(passwordResetExpiryHours);
         
-        tokenStore.put(token, new TokenData(email, TokenType.PASSWORD_RESET, expiry));
+        Token tokenEntity = new Token();
+        tokenEntity.setToken(token);
+        tokenEntity.setEmail(email);
+        tokenEntity.setType(Token.TokenType.PASSWORD_RESET);
+        tokenEntity.setExpiry(expiry);
+        
+        tokenRepository.save(tokenEntity);
         log.info("Generated password reset token for: {}", email);
         
         return token;
     }
     
-    public boolean validateToken(String token, TokenType expectedType) {
-        TokenData tokenData = tokenStore.get(token);
+    public boolean validateToken(String token, Token.TokenType expectedType) {
+        Optional<Token> tokenOpt = tokenRepository.findByTokenAndType(token, expectedType);
         
-        if (tokenData == null) {
+        if (tokenOpt.isEmpty()) {
             log.warn("Token not found: {}", token);
             return false;
         }
         
-        if (tokenData.getType() != expectedType) {
-            log.warn("Token type mismatch. Expected: {}, Actual: {}", expectedType, tokenData.getType());
+        Token tokenEntity = tokenOpt.get();
+        
+        if (tokenEntity.isExpired()) {
+            log.warn("Token expired: {}", token);
+            tokenRepository.delete(tokenEntity);
             return false;
         }
         
-        if (tokenData.getExpiry().isBefore(LocalDateTime.now())) {
-            log.warn("Token expired: {}", token);
-            tokenStore.remove(token);
+        if (tokenEntity.isUsed()) {
+            log.warn("Token already used: {}", token);
             return false;
         }
         
@@ -68,47 +92,24 @@ public class TokenService {
     }
     
     public String getEmailFromToken(String token) {
-        TokenData tokenData = tokenStore.get(token);
-        return tokenData != null ? tokenData.getEmail() : null;
+        Optional<Token> tokenOpt = tokenRepository.findByToken(token);
+        return tokenOpt.map(Token::getEmail).orElse(null);
     }
     
+    @Transactional
     public void invalidateToken(String token) {
-        tokenStore.remove(token);
-        log.info("Token invalidated: {}", token);
+        Optional<Token> tokenOpt = tokenRepository.findByToken(token);
+        if (tokenOpt.isPresent()) {
+            Token tokenEntity = tokenOpt.get();
+            tokenEntity.setUsedAt(LocalDateTime.now());
+            tokenRepository.save(tokenEntity);
+            log.info("Token invalidated: {}", token);
+        }
     }
     
     private String generateSecureToken() {
         byte[] randomBytes = new byte[32];
         secureRandom.nextBytes(randomBytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
-    }
-    
-    public enum TokenType {
-        EMAIL_CONFIRMATION,
-        PASSWORD_RESET
-    }
-    
-    private static class TokenData {
-        private final String email;
-        private final TokenType type;
-        private final LocalDateTime expiry;
-        
-        public TokenData(String email, TokenType type, LocalDateTime expiry) {
-            this.email = email;
-            this.type = type;
-            this.expiry = expiry;
-        }
-        
-        public String getEmail() {
-            return email;
-        }
-        
-        public TokenType getType() {
-            return type;
-        }
-        
-        public LocalDateTime getExpiry() {
-            return expiry;
-        }
     }
 }

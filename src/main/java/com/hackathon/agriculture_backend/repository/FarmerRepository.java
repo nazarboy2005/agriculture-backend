@@ -32,3 +32,4 @@ public interface FarmerRepository extends JpaRepository<Farmer, Long> {
     @Query("SELECT f.preferredCrop, COUNT(f) FROM Farmer f GROUP BY f.preferredCrop ORDER BY COUNT(f) DESC")
     List<Object[]> findCropDistribution();
 }
+

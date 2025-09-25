@@ -30,3 +30,4 @@ public class WaterSavingsDto {
         private String explanation;
     }
 }
+

@@ -155,3 +155,4 @@ public class FarmerService {
         farmer.setSmsOptIn(dto.getSmsOptIn());
     }
 }
+

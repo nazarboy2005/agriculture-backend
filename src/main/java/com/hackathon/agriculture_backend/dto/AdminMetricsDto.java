@@ -51,3 +51,4 @@ public class AdminMetricsDto {
         private Double percentage;
     }
 }
+

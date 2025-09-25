@@ -2,12 +2,15 @@ package com.hackathon.agriculture_backend.controller;
 
 import com.hackathon.agriculture_backend.dto.ApiResponse;
 import com.hackathon.agriculture_backend.model.User;
+import com.hackathon.agriculture_backend.model.Token;
 import com.hackathon.agriculture_backend.service.UserService;
 import com.hackathon.agriculture_backend.service.EmailService;
 import com.hackathon.agriculture_backend.service.TokenService;
 import com.hackathon.agriculture_backend.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,6 +30,8 @@ import java.util.Optional;
 @Slf4j
 @CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
 public class AuthController {
+    
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
     
     private final UserService userService;
     private final JwtUtil jwtUtil;
@@ -112,6 +117,43 @@ public class AuthController {
                     .body(ApiResponse.error("Failed to logout: " + e.getMessage()));
         }
     }
+
+    @PostMapping("/create-test-user")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> createTestUser() {
+        try {
+            String testEmail = "mbappezu@gmail.com";
+            String testName = "Test User";
+            String testPassword = "password123";
+            
+            // Check if user already exists
+            Optional<User> existingUser = userService.findByEmailOptional(testEmail);
+            if (existingUser.isPresent()) {
+                return ResponseEntity.ok(ApiResponse.success("Test user already exists", 
+                    createUserResponse(existingUser.get())));
+            }
+            
+            // Create test user
+            User user = new User();
+            user.setEmail(testEmail);
+            user.setName(testName);
+            user.setPassword(passwordEncoder.encode(testPassword));
+            user.setEmailVerified(true); // Skip email verification for test user
+            user.setIsEnabled(true);
+            user.setRole(User.Role.USER);
+            
+            log.info("Creating test user with email: {}", testEmail);
+            User savedUser = userService.save(user);
+            log.info("Test user created successfully with ID: {}", savedUser.getId());
+            
+            return ResponseEntity.ok(ApiResponse.success("Test user created successfully", 
+                createUserResponse(savedUser)));
+            
+        } catch (Exception e) {
+            log.error("Error creating test user: {}", e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("Failed to create test user: " + e.getMessage()));
+        }
+    }
     
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Map<String, Object>>> register(@Valid @RequestBody RegisterRequest request) {
@@ -160,13 +202,17 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<Map<String, Object>>> login(@Valid @RequestBody LoginRequest request) {
         try {
+            log.info("Login attempt for email: {}", request.getEmail());
             Optional<User> userOpt = userService.findByEmailOptional(request.getEmail());
             if (userOpt.isEmpty()) {
+                log.warn("Login failed: User not found for email: {}", request.getEmail());
                 return ResponseEntity.badRequest()
                         .body(ApiResponse.error("Invalid email or password"));
             }
             
             User user = userOpt.get();
+            log.info("User found: {}, emailVerified: {}, hasPassword: {}", 
+                    user.getEmail(), user.getEmailVerified(), user.getPassword() != null);
             
             // Check if user has password (not OAuth user)
             if (user.getPassword() == null) {
@@ -175,13 +221,17 @@ public class AuthController {
             }
             
             // Check password
-            if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            boolean passwordMatches = passwordEncoder.matches(request.getPassword(), user.getPassword());
+            log.info("Password match result: {}", passwordMatches);
+            if (!passwordMatches) {
+                log.warn("Login failed: Password mismatch for email: {}", request.getEmail());
                 return ResponseEntity.badRequest()
                         .body(ApiResponse.error("Invalid email or password"));
             }
             
             // Check if email is verified
             if (!user.getEmailVerified()) {
+                log.warn("Login failed: Email not verified for user: {}", user.getEmail());
                 return ResponseEntity.badRequest()
                         .body(ApiResponse.error("Please verify your email before logging in"));
             }
@@ -212,9 +262,9 @@ public class AuthController {
                         .body(ApiResponse.error("Token is required"));
             }
             
-            if (!tokenService.validateToken(token, TokenService.TokenType.EMAIL_CONFIRMATION)) {
+            if (!tokenService.validateToken(token, Token.TokenType.EMAIL_CONFIRMATION)) {
                 return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("Invalid or expired token"));
+                        .body(ApiResponse.error("Invalid or expired token. Please request a new confirmation email."));
             }
             
             String email = tokenService.getEmailFromToken(token);
@@ -226,11 +276,19 @@ public class AuthController {
             }
             
             User user = userOpt.get();
+            
+            // Check if email is already verified
+            if (user.getEmailVerified()) {
+                return ResponseEntity.ok(ApiResponse.success("Email is already verified", createUserResponse(user)));
+            }
+            
             user.setEmailVerified(true);
             user.setEmailVerificationToken(null);
             userService.save(user);
             
             tokenService.invalidateToken(token);
+            
+            log.info("Email confirmed successfully for user: {}", email);
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Email confirmed successfully");
@@ -322,9 +380,9 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponse<String>> resetPassword(@RequestBody ResetPasswordRequest request) {
         try {
-            if (!tokenService.validateToken(request.getToken(), TokenService.TokenType.PASSWORD_RESET)) {
+            if (!tokenService.validateToken(request.getToken(), Token.TokenType.PASSWORD_RESET)) {
                 return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("Invalid or expired token"));
+                        .body(ApiResponse.error("Invalid or expired token. Please request a new password reset."));
             }
             
             String email = tokenService.getEmailFromToken(request.getToken());
@@ -336,10 +394,25 @@ public class AuthController {
             }
             
             User user = userOpt.get();
+            
+            // Check if user has a password (not OAuth user)
+            if (user.getPassword() == null) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("This account uses Google login. Please use Google to sign in."));
+            }
+            
+            // Validate password strength
+            if (request.getPassword().length() < 8) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Password must be at least 8 characters long"));
+            }
+            
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             userService.save(user);
             
             tokenService.invalidateToken(request.getToken());
+            
+            log.info("Password reset successfully for user: {}", email);
             
             return ResponseEntity.ok(ApiResponse.success("Password reset successfully"));
             
@@ -362,6 +435,42 @@ public class AuthController {
             log.error("Error getting Google login URL: {}", e.getMessage());
             return ResponseEntity.status(500)
                     .body(ApiResponse.error("Failed to get login URL: " + e.getMessage()));
+        }
+    }
+    
+    // Development endpoint to verify email without going through email system
+    @PostMapping("/verify-email-dev")
+    public ResponseEntity<ApiResponse<String>> verifyEmailDev(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            if (email == null || email.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Email is required"));
+            }
+            
+            Optional<User> userOpt = userService.findByEmailOptional(email);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("User not found"));
+            }
+            
+            User user = userOpt.get();
+            if (user.getEmailVerified()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Email is already verified"));
+            }
+            
+            user.setEmailVerified(true);
+            user.setEmailVerificationToken(null);
+            userService.save(user);
+            
+            log.info("Email verified for development: {}", email);
+            return ResponseEntity.ok(ApiResponse.success("Email verified successfully"));
+            
+        } catch (Exception e) {
+            log.error("Error verifying email: {}", e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("Email verification failed: " + e.getMessage()));
         }
     }
     

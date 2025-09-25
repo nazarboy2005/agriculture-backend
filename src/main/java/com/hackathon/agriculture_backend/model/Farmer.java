@@ -59,3 +59,4 @@ public class Farmer {
         updatedAt = Instant.now();
     }
 }
+

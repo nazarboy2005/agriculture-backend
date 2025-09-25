@@ -8,3 +8,4 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class SchedulingConfig {
     // Configuration for scheduled tasks
 }
+

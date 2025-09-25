@@ -25,6 +25,11 @@ public class Chat {
     @JsonIgnore
     private Farmer farmer;
     
+    // Getter for farmerId to match frontend expectations
+    public Long getFarmerId() {
+        return farmer != null ? farmer.getId() : null;
+    }
+    
     @Column(name = "user_message", nullable = false, columnDefinition = "TEXT")
     private String userMessage;
     
@@ -73,6 +78,7 @@ public class Chat {
         FERTILIZER_ADVICE,
         HARVEST_PLANNING,
         MARKET_INFO,
-        TECHNICAL_SUPPORT
+        TECHNICAL_SUPPORT,
+        DISEASE_TREATMENT
     }
 }

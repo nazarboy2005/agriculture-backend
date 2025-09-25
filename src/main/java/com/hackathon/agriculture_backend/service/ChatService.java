@@ -42,18 +42,18 @@ public class ChatService {
     public CompletableFuture<Chat> sendMessage(Long farmerId, String userMessage, String messageType) {
         log.info("Processing chat message from farmer ID: {}", farmerId);
         
+        // Content filtering - check if message is plant/agriculture related
+        if (!isAgricultureRelated(userMessage)) {
+            log.info("Non-agriculture related message detected, returning filtered response");
+            return CompletableFuture.completedFuture(createFilteredResponse(farmerId, userMessage, messageType));
+        }
+        
         try {
             // Get farmer information
             Optional<FarmerDto> farmerDtoOpt = farmerService.getFarmerById(farmerId);
             if (farmerDtoOpt.isEmpty()) {
-                log.warn("Farmer not found with ID: {}, creating mock farmer", farmerId);
-                // Create a mock farmer for demo purposes
-                FarmerDto mockFarmer = new FarmerDto();
-                mockFarmer.setId(farmerId);
-                mockFarmer.setName("Demo Farmer");
-                mockFarmer.setLocationName("Demo Location");
-                mockFarmer.setPreferredCrop("Tomato");
-                farmerDtoOpt = Optional.of(mockFarmer);
+                log.error("Farmer not found with ID: {}, this should not happen if farmer exists", farmerId);
+                throw new RuntimeException("Farmer not found with ID: " + farmerId + ". Please ensure the farmer exists in the database.");
             }
             
             // Convert DTO to Entity for internal use
@@ -120,7 +120,23 @@ public class ChatService {
             
         } catch (Exception e) {
             log.error("Error processing chat message: {}", e.getMessage());
-            return CompletableFuture.failedFuture(e);
+            // Return a proper error response instead of failing
+            Chat errorChat = new Chat();
+            errorChat.setId(1L);
+            errorChat.setUserMessage(userMessage);
+            errorChat.setAiResponse("I apologize, but I'm having trouble processing your request right now. Please try again later.");
+            errorChat.setMessageType(Chat.MessageType.valueOf(messageType.toUpperCase()));
+            errorChat.setContextData("Error response due to: " + e.getMessage());
+            
+            // Create a mock farmer for error response
+            Farmer mockFarmer = new Farmer();
+            mockFarmer.setId(farmerId);
+            mockFarmer.setName("Error Response");
+            mockFarmer.setLocationName("Unknown");
+            mockFarmer.setPreferredCrop("Unknown");
+            errorChat.setFarmer(mockFarmer);
+            
+            return CompletableFuture.completedFuture(errorChat);
         }
     }
     
@@ -264,5 +280,162 @@ public class ChatService {
         }
         
         return context.toString();
+    }
+    
+    /**
+     * Check if the user message is related to agriculture, farming, or plants
+     */
+    private boolean isAgricultureRelated(String message) {
+        if (message == null || message.trim().isEmpty()) {
+            return false;
+        }
+        
+        String lowerMessage = message.toLowerCase();
+        
+        // Agriculture-related keywords
+        String[] agricultureKeywords = {
+            "plant", "crop", "farm", "agriculture", "irrigation", "water", "soil", "fertilizer",
+            "harvest", "seed", "grow", "cultivate", "yield", "pest", "disease", "weather",
+            "temperature", "humidity", "rain", "drought", "flood", "disease", "insect",
+            "weed", "nutrient", "nitrogen", "phosphorus", "potassium", "organic", "sustainable",
+            "greenhouse", "field", "land", "tractor", "equipment", "machinery", "livestock",
+            "cattle", "sheep", "goat", "chicken", "poultry", "dairy", "milk", "egg",
+            "vegetable", "fruit", "grain", "wheat", "rice", "corn", "tomato", "potato",
+            "onion", "carrot", "lettuce", "cabbage", "spinach", "broccoli", "cauliflower",
+            "pepper", "cucumber", "squash", "pumpkin", "bean", "pea", "lentil", "soybean",
+            "cotton", "sugarcane", "coffee", "tea", "spice", "herb", "flower", "tree",
+            "orchard", "vineyard", "garden", "plot", "acre", "hectare", "yield", "production",
+            "market", "price", "profit", "loss", "cost", "investment", "loan", "credit",
+            "insurance", "government", "subsidy", "policy", "regulation", "certification",
+            "organic", "gmo", "hybrid", "variety", "breed", "strain", "genetics", "breeding",
+            "research", "development", "innovation", "technology", "precision", "automation",
+            "sensor", "drone", "satellite", "gps", "mapping", "monitoring", "tracking",
+            "data", "analytics", "prediction", "forecast", "model", "algorithm", "ai",
+            "machine learning", "iot", "smart farming", "digital agriculture", "agtech"
+        };
+        
+        // Check if message contains agriculture-related keywords
+        for (String keyword : agricultureKeywords) {
+            if (lowerMessage.contains(keyword)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Generate AI treatment suggestions for plant diseases without farmer context
+     */
+    public CompletableFuture<Chat> generateDiseaseTreatment(String diseaseName, Double confidence, Boolean isHealthy, String healthStatus) {
+        log.info("Generating disease treatment for: {} with confidence: {}", diseaseName, confidence);
+        
+        try {
+            // Create a simple prompt focused only on the disease
+            String prompt = String.format(
+                "You are a plant disease specialist. Provide treatment recommendations for: %s (%.1f%% confidence, %s health status: %s). " +
+                "Focus ONLY on treating this specific disease. Do NOT mention any farmer names, locations, or crop types. " +
+                "Provide: 1) Treatment steps, 2) Prevention measures, 3) Recovery timeline, 4) When to seek help. " +
+                "Keep response focused on %s only.",
+                diseaseName, confidence * 100, isHealthy ? "Healthy" : "Unhealthy", healthStatus, diseaseName
+            );
+            
+            // Create a mock farmer for disease treatment
+            Farmer mockFarmer = new Farmer();
+            mockFarmer.setId(1L);
+            mockFarmer.setName("Disease Treatment Specialist");
+            mockFarmer.setLocationName("Unknown");
+            mockFarmer.setPreferredCrop("Unknown");
+            
+            // Call Gemini API with mock farmer context
+            String aiResponse = geminiService.generatePersonalizedResponse(
+                    mockFarmer, 
+                    prompt, 
+                    new ArrayList<>(), 
+                    "Weather data unavailable", 
+                    "Disease treatment context"
+            ).join();
+            
+            // Create a simple chat record
+            Chat chat = new Chat();
+            chat.setFarmer(mockFarmer); // Set the farmer relationship
+            chat.setUserMessage("Disease treatment request for: " + diseaseName);
+            chat.setAiResponse(aiResponse);
+            chat.setMessageType(Chat.MessageType.PEST_DISEASE);
+            chat.setContextData("Disease treatment for: " + diseaseName);
+            
+            // Save to database
+            chat = chatRepository.save(chat);
+            
+            return CompletableFuture.completedFuture(chat);
+            
+        } catch (Exception e) {
+            log.error("Error generating disease treatment: {}", e.getMessage());
+            
+            // Create a mock farmer for fallback response
+            Farmer fallbackFarmer = new Farmer();
+            fallbackFarmer.setId(1L);
+            fallbackFarmer.setName("Disease Treatment Specialist");
+            fallbackFarmer.setLocationName("Unknown");
+            fallbackFarmer.setPreferredCrop("Unknown");
+            
+            // Return a fallback response
+            Chat fallbackChat = new Chat();
+            fallbackChat.setFarmer(fallbackFarmer); // Set the farmer relationship
+            fallbackChat.setUserMessage("Disease treatment request for: " + diseaseName);
+            fallbackChat.setAiResponse("Unable to generate treatment suggestions at the moment. Please try again later.");
+            fallbackChat.setMessageType(Chat.MessageType.PEST_DISEASE);
+            fallbackChat.setContextData("Disease treatment for: " + diseaseName);
+            
+            return CompletableFuture.completedFuture(fallbackChat);
+        }
+    }
+    
+    /**
+     * Create a filtered response for non-agriculture related messages
+     */
+    private Chat createFilteredResponse(Long farmerId, String userMessage, String messageType) {
+        log.info("Creating filtered response for non-agriculture message from farmer ID: {}", farmerId);
+        
+        try {
+            // Create a mock farmer for the response
+            Farmer mockFarmer = new Farmer();
+            mockFarmer.setId(farmerId);
+            mockFarmer.setName("Farmer");
+            mockFarmer.setLocationName("Unknown");
+            mockFarmer.setPreferredCrop("Unknown");
+            
+            // Create filtered chat response
+            Chat filteredChat = new Chat();
+            filteredChat.setFarmer(mockFarmer);
+            filteredChat.setUserMessage(userMessage);
+            filteredChat.setAiResponse("I'm specialized in agriculture and farming topics. Please ask me about crops, irrigation, plant diseases, weather conditions, or other farming-related questions. How can I help you with your agricultural needs?");
+            filteredChat.setMessageType(Chat.MessageType.valueOf(messageType.toUpperCase()));
+            filteredChat.setContextData("Filtered response for non-agriculture message");
+            
+            // Save to database
+            return chatRepository.save(filteredChat);
+            
+        } catch (Exception e) {
+            log.error("Error creating filtered response: {}", e.getMessage());
+            
+            // Return a fallback filtered response
+            Chat fallbackChat = new Chat();
+            fallbackChat.setId(1L); // Mock ID
+            fallbackChat.setUserMessage(userMessage);
+            fallbackChat.setAiResponse("I'm specialized in agriculture and farming topics. Please ask me about crops, irrigation, plant diseases, weather conditions, or other farming-related questions. How can I help you with your agricultural needs?");
+            fallbackChat.setMessageType(Chat.MessageType.valueOf(messageType.toUpperCase()));
+            fallbackChat.setContextData("Filtered response for non-agriculture message");
+            
+            // Create a mock farmer for fallback response
+            Farmer mockFarmer = new Farmer();
+            mockFarmer.setId(farmerId);
+            mockFarmer.setName("Farmer");
+            mockFarmer.setLocationName("Unknown");
+            mockFarmer.setPreferredCrop("Unknown");
+            fallbackChat.setFarmer(mockFarmer);
+            
+            return fallbackChat;
+        }
     }
 }

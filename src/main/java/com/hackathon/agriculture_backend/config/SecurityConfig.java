@@ -1,8 +1,8 @@
 package com.hackathon.agriculture_backend.config;
 
 import com.hackathon.agriculture_backend.security.JwtAuthenticationFilter;
-import com.hackathon.agriculture_backend.security.OAuth2AuthenticationSuccessHandler;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -25,10 +25,10 @@ import java.util.Arrays;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityConfig {
     
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
@@ -58,21 +58,14 @@ public class SecurityConfig {
                 .requestMatchers("/v1/smart-irrigation/**").permitAll() // Allow smart irrigation for demo purposes
                 .requestMatchers("/v1/farmer-zones/**").permitAll() // Allow zone management for demo purposes
                 .requestMatchers("/v1/recommendations/**").permitAll() // Allow recommendations for demo purposes
+                .requestMatchers("/disease/**").authenticated() // Require authentication for disease detection
                 .requestMatchers("/v1/farmers/**").authenticated()
                 .requestMatchers("/v1/alerts/**").authenticated()
                 .requestMatchers("/v1/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
-            .oauth2Login(oauth2 -> oauth2
-                .successHandler(oAuth2AuthenticationSuccessHandler)
-                .defaultSuccessUrl(frontendUrl + "/auth/callback/google", true)
-                .authorizationEndpoint(auth -> auth
-                    .baseUri("/oauth2/authorization")
-                )
-                .redirectionEndpoint(redirect -> redirect
-                    .baseUri("/oauth2/callback/*")
-                )
-            )
+            // OAuth2 configuration is disabled by default via spring.autoconfigure.exclude
+            // To enable OAuth2, remove the exclude property and configure environment variables
             .logout(logout -> logout
                 .logoutSuccessUrl(frontendUrl + "/login")
                 .invalidateHttpSession(false)
@@ -93,7 +86,8 @@ public class SecurityConfig {
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             frontendUrl,
-            "https://agriculture-frontend.vercel.app"
+            "https://agriculture-frontend.vercel.app",
+            "https://your-actual-frontend-name.vercel.app"  // Replace with your actual Vercel URL
         ));
         
         // Allow origin patterns for development

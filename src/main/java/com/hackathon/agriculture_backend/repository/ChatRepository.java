@@ -14,11 +14,14 @@ import java.util.List;
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Long> {
     
-    List<Chat> findByFarmerIdOrderByCreatedAtDesc(Long farmerId);
+    @Query("SELECT c FROM Chat c WHERE c.farmer.id = :farmerId ORDER BY c.createdAt DESC")
+    List<Chat> findByFarmerIdOrderByCreatedAtDesc(@Param("farmerId") Long farmerId);
     
-    Page<Chat> findByFarmerIdOrderByCreatedAtDesc(Long farmerId, Pageable pageable);
+    @Query("SELECT c FROM Chat c WHERE c.farmer.id = :farmerId ORDER BY c.createdAt DESC")
+    Page<Chat> findByFarmerIdOrderByCreatedAtDesc(@Param("farmerId") Long farmerId, Pageable pageable);
     
-    List<Chat> findByFarmerIdAndMessageTypeOrderByCreatedAtDesc(Long farmerId, Chat.MessageType messageType);
+    @Query("SELECT c FROM Chat c WHERE c.farmer.id = :farmerId AND c.messageType = :messageType ORDER BY c.createdAt DESC")
+    List<Chat> findByFarmerIdAndMessageTypeOrderByCreatedAtDesc(@Param("farmerId") Long farmerId, @Param("messageType") Chat.MessageType messageType);
     
     @Query("SELECT c FROM Chat c WHERE c.farmer.id = :farmerId AND c.createdAt >= :startDate AND c.createdAt <= :endDate ORDER BY c.createdAt DESC")
     List<Chat> findByFarmerIdAndDateRange(@Param("farmerId") Long farmerId, 
@@ -34,9 +37,11 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     @Query("SELECT AVG(CASE WHEN c.isHelpful = true THEN 1.0 ELSE 0.0 END) FROM Chat c WHERE c.farmer.id = :farmerId AND c.isHelpful IS NOT NULL")
     Double getAverageHelpfulnessByFarmerId(@Param("farmerId") Long farmerId);
     
-    Long countByFarmerId(Long farmerId);
+    @Query("SELECT COUNT(c) FROM Chat c WHERE c.farmer.id = :farmerId")
+    Long countByFarmerId(@Param("farmerId") Long farmerId);
     
-    Long countByFarmerIdAndMessageType(Long farmerId, Chat.MessageType messageType);
+    @Query("SELECT COUNT(c) FROM Chat c WHERE c.farmer.id = :farmerId AND c.messageType = :messageType")
+    Long countByFarmerIdAndMessageType(@Param("farmerId") Long farmerId, @Param("messageType") Chat.MessageType messageType);
     
     @Query("SELECT c FROM Chat c WHERE c.farmer.id = :farmerId ORDER BY c.createdAt DESC LIMIT :limit")
     List<Chat> findRecentChatsByFarmerId(@Param("farmerId") Long farmerId, @Param("limit") int limit);

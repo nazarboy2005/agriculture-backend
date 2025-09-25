@@ -185,4 +185,34 @@ public class ChatController {
         log.info("Chat service health check");
         return ResponseEntity.ok(ApiResponse.success("Chat service is running"));
     }
+    
+    @GetMapping("/test")
+    public ResponseEntity<ApiResponse<String>> testEndpoint() {
+        log.info("Chat test endpoint called");
+        return ResponseEntity.ok(ApiResponse.success("Chat API is working"));
+    }
+    
+    @PostMapping("/disease-treatment")
+    public CompletableFuture<ResponseEntity<ApiResponse<Chat>>> generateDiseaseTreatment(
+            @RequestParam String diseaseName,
+            @RequestParam Double confidence,
+            @RequestParam Boolean isHealthy,
+            @RequestParam String healthStatus) {
+        
+        log.info("Generating disease treatment for: {} with confidence: {}", diseaseName, confidence);
+        
+        return chatService.generateDiseaseTreatment(diseaseName, confidence, isHealthy, healthStatus)
+                .thenApply(chat -> ResponseEntity.ok(ApiResponse.success("Disease treatment generated successfully", chat)))
+                .exceptionally(throwable -> {
+                    log.error("Error generating disease treatment: {}", throwable.getMessage());
+                    return ResponseEntity.ok(ApiResponse.success("Disease treatment generated successfully", 
+                        new Chat() {{
+                            setUserMessage("Disease treatment request for: " + diseaseName);
+                            setAiResponse("Unable to generate treatment suggestions at the moment. Please try again later.");
+                            setMessageType(Chat.MessageType.PEST_DISEASE);
+                            setContextData("Disease treatment for: " + diseaseName);
+                        }}
+                    ));
+                });
+    }
 }

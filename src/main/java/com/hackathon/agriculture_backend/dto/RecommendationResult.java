@@ -21,3 +21,4 @@ public class RecommendationResult {
         this.score = 0;
     }
 }
+
