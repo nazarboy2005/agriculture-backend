@@ -1,1 +1,1 @@
-web: chmod +x start.sh && ./start.sh
+web: mvn spring-boot:run
