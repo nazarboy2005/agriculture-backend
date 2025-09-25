@@ -15,7 +15,7 @@ import java.util.Arrays;
 public class UltimateCorsConfig {
 
     @Bean
-    public CorsFilter corsFilter() {
+    public CorsFilter ultimateCorsFilter() {
         log.error("ULTIMATE CORS CONFIG - Creating ultimate CORS filter");
         
         CorsConfiguration config = new CorsConfiguration();
