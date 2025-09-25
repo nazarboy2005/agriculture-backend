@@ -1,8 +1,9 @@
 package com.hackathon.agriculture_backend.service;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -13,13 +14,13 @@ import org.thymeleaf.context.Context;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EmailService {
     
-    private final JavaMailSender mailSender;
+    private final Optional<JavaMailSender> mailSender;
     private final TemplateEngine templateEngine;
     
     @Value("${app.email.from:noreply@smartagriculture.com}")
@@ -31,14 +32,19 @@ public class EmailService {
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
     
+    public EmailService(@Autowired(required = false) JavaMailSender mailSender, TemplateEngine templateEngine) {
+        this.mailSender = Optional.ofNullable(mailSender);
+        this.templateEngine = templateEngine;
+    }
+    
     public void sendEmailConfirmation(String to, String name, String confirmationToken) {
-        if (!emailEnabled) {
-            log.warn("Email sending is disabled. Skipping email confirmation for: {}", to);
+        if (!emailEnabled || !mailSender.isPresent()) {
+            log.warn("Email sending is disabled or mail sender not available. Skipping email confirmation for: {}", to);
             return;
         }
         
         try {
-            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessage message = mailSender.get().createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setFrom(fromEmail);
@@ -51,7 +57,7 @@ public class EmailService {
             
             helper.setText(emailContent, true);
             
-            mailSender.send(message);
+            mailSender.get().send(message);
             log.info("Email confirmation sent to: {}", to);
             
         } catch (MessagingException e) {
@@ -65,13 +71,13 @@ public class EmailService {
     }
     
     public void sendPasswordResetEmail(String to, String name, String resetToken) {
-        if (!emailEnabled) {
-            log.warn("Email sending is disabled. Skipping password reset email for: {}", to);
+        if (!emailEnabled || !mailSender.isPresent()) {
+            log.warn("Email sending is disabled or mail sender not available. Skipping password reset email for: {}", to);
             return;
         }
         
         try {
-            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessage message = mailSender.get().createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             
             helper.setFrom(fromEmail);
@@ -84,7 +90,7 @@ public class EmailService {
             
             helper.setText(emailContent, true);
             
-            mailSender.send(message);
+            mailSender.get().send(message);
             log.info("Password reset email sent to: {}", to);
             
         } catch (MessagingException e) {
