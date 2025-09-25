@@ -27,19 +27,26 @@ public class CorsHeaderAdvice implements ResponseBodyAdvice<Object> {
         log.error("CORS HEADER ADVICE - Origin: {}", origin);
         log.error("CORS HEADER ADVICE - Request URL: {}", request.getURI());
         
-        if (origin != null) {
-            log.error("CORS HEADER ADVICE - FORCING CORS HEADERS FOR: {}", origin);
+        // Check if this is a Vercel origin
+        if (origin != null && (origin.contains("vercel.app") || origin.equals("https://agriculture-frontend-two.vercel.app"))) {
+            log.error("CORS HEADER ADVICE - FORCING CORS HEADERS FOR VERCEL ORIGIN: {}", origin);
+            
+            // Clear any existing headers first
+            response.getHeaders().clear();
             
             // Force CORS headers
             response.getHeaders().set("Access-Control-Allow-Origin", origin);
             response.getHeaders().set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
-            response.getHeaders().set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With, Accept, Origin");
+            response.getHeaders().set("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With, Accept, Origin, Access-Control-Request-Method, Access-Control-Request-Headers");
             response.getHeaders().set("Access-Control-Allow-Credentials", "true");
             response.getHeaders().set("Access-Control-Max-Age", "3600");
-            response.getHeaders().set("Access-Control-Expose-Headers", "Authorization, Content-Type");
+            response.getHeaders().set("Access-Control-Expose-Headers", "Authorization, Content-Type, Access-Control-Allow-Origin");
             response.getHeaders().set("Vary", "Origin");
+            response.getHeaders().set("Content-Type", "application/json");
             
-            log.error("CORS HEADER ADVICE - HEADERS SET FOR: {}", origin);
+            log.error("CORS HEADER ADVICE - HEADERS FORCED FOR: {}", origin);
+        } else {
+            log.error("CORS HEADER ADVICE - ORIGIN NOT VERCEL: {}", origin);
         }
         
         return body;
