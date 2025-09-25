@@ -83,12 +83,8 @@
 			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
-		<!-- Google AI client for Gemini API -->
-		<dependency>
-			<groupId>com.google.ai.client.generativeai</groupId>
-			<artifactId>generativeai</artifactId>
-			<version>0.2.2</version>
-		</dependency>
+		<!-- Google AI client for Gemini API - Using HTTP client approach -->
+		<!-- Note: Using WebClient (already included above) for Gemini API calls -->
 
 		<dependency>
 			<groupId>org.postgresql</groupId>
