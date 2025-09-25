@@ -8,4 +8,4 @@ cmds = ["mvn clean install -DskipTests"]
 cmds = ["mvn clean package -DskipTests", "echo 'Build completed, checking JAR file...'", "pwd", "ls -la", "ls -la target/", "find . -name '*.jar' -type f", "echo 'Checking for agriculture-backend JAR...'", "if [ -f target/agriculture-backend-0.0.1-SNAPSHOT.jar ]; then echo 'SUCCESS: JAR file found at target/agriculture-backend-0.0.1-SNAPSHOT.jar'; ls -la target/agriculture-backend-0.0.1-SNAPSHOT.jar; else echo 'ERROR: JAR file not found at expected location!'; echo 'Available JAR files:'; find . -name '*.jar' -type f; exit 1; fi"]
 
 [start]
-cmd = "sh -c 'PORT=${PORT:-9090}; java -jar app.jar --server.port=$PORT'"
+cmd = "java -jar app.jar"
