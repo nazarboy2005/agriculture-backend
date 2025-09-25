@@ -79,11 +79,6 @@ public class RailwayCorsKiller implements Filter {
                 }
                 
                 @Override
-                public void setStatus(int sc, String sm) {
-                    original.setStatus(sc, sm);
-                }
-                
-                @Override
                 public void sendError(int sc, String msg) throws IOException {
                     original.sendError(sc, msg);
                 }
@@ -96,6 +91,26 @@ public class RailwayCorsKiller implements Filter {
                 @Override
                 public void sendRedirect(String location) throws IOException {
                     original.sendRedirect(location);
+                }
+                
+                @Override
+                public String encodeRedirectURL(String url) {
+                    return original.encodeRedirectURL(url);
+                }
+                
+                @Override
+                public String encodeRedirectUrl(String url) {
+                    return original.encodeRedirectUrl(url);
+                }
+                
+                @Override
+                public String encodeURL(String url) {
+                    return original.encodeURL(url);
+                }
+                
+                @Override
+                public String encodeUrl(String url) {
+                    return original.encodeUrl(url);
                 }
                 
                 @Override
@@ -218,6 +233,16 @@ public class RailwayCorsKiller implements Filter {
                 @Override
                 public java.util.Collection<String> getHeaderNames() {
                     return original.getHeaderNames();
+                }
+                
+                @Override
+                public boolean containsHeader(String name) {
+                    return original.containsHeader(name);
+                }
+                
+                @Override
+                public void addCookie(jakarta.servlet.http.Cookie cookie) {
+                    original.addCookie(cookie);
                 }
             };
             
