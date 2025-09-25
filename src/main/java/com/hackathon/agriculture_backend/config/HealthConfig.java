@@ -1,13 +1,11 @@
 package com.hackathon.agriculture_backend.config;
 
 import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.boot.actuate.mail.MailHealthIndicator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Profile;
 
 /**
  * Health configuration to prevent SMTP timeout issues in production
@@ -39,14 +37,11 @@ public class HealthConfig {
      */
     @Bean
     @ConditionalOnProperty(name = "management.health.mail.enabled", havingValue = "true")
-    public MailHealthIndicator disabledMailHealthIndicator() {
-        return new MailHealthIndicator(null) {
-            @Override
-            public Health health() {
-                return Health.up()
-                        .withDetail("mail", "Email health check disabled")
-                        .build();
-            }
+    public HealthIndicator disabledMailHealthIndicator() {
+        return () -> {
+            return Health.up()
+                    .withDetail("mail", "Email health check disabled")
+                    .build();
         };
     }
 }
