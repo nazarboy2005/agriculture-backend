@@ -1,1 +1,1 @@
-web: chmod +x ./mvnw && ./mvnw spring-boot:run
+web: mvn spring-boot:run
