@@ -26,6 +26,9 @@ RUN ./mvnw clean package -DskipTests -X
 RUN ls -la target/
 RUN find target/ -name "*.jar" -type f
 
+# Verify JAR file exists
+RUN if [ ! -f target/agriculture-backend-0.0.1-SNAPSHOT.jar ]; then echo "ERROR: JAR file not created!"; exit 1; else echo "SUCCESS: JAR file created successfully"; fi
+
 # Runtime stage
 FROM amazoncorretto:17-alpine
 

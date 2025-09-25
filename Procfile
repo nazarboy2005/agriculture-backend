@@ -1,1 +1,1 @@
-web: sh -c 'if [ -f target/agriculture-backend-0.0.1-SNAPSHOT.jar ]; then java -jar target/agriculture-backend-0.0.1-SNAPSHOT.jar --server.port=$PORT; else echo "JAR not found, building..."; mvn clean package -DskipTests && java -jar target/agriculture-backend-0.0.1-SNAPSHOT.jar --server.port=$PORT; fi'
+web: java -jar target/agriculture-backend-0.0.1-SNAPSHOT.jar --server.port=$PORT
