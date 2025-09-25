@@ -35,7 +35,7 @@ WORKDIR /app
 RUN apk add --no-cache curl
 
 # Copy the built JAR from build stage
-COPY --from=build /app/target/agriculture-backend-*.jar app.jar
+COPY --from=build /app/target/agriculture-backend-0.0.1-SNAPSHOT.jar app.jar
 
 # Create non-root user for security
 RUN addgroup -g 1001 appuser && adduser -D -u 1001 -G appuser appuser
