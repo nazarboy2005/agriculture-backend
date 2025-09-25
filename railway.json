@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "./start.sh",
+    "startCommand": "if [ -f target/agriculture-backend-0.0.1-SNAPSHOT.jar ]; then java -jar target/agriculture-backend-0.0.1-SNAPSHOT.jar --server.port=$PORT; else echo 'JAR file not found, building...'; mvn clean package -DskipTests && java -jar target/agriculture-backend-0.0.1-SNAPSHOT.jar --server.port=$PORT; fi",
     "healthcheckPath": "/api/actuator/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",

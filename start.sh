@@ -7,6 +7,9 @@ echo
 # Set working directory to script location
 cd "$(dirname "$0")"
 
+# Make sure the script is executable
+chmod +x "$0" 2>/dev/null || true
+
 echo "📋 Current directory: $(pwd)"
 echo
 
