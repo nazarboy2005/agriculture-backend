@@ -23,19 +23,19 @@ COPY src src
 RUN ./mvnw clean package -DskipTests
 
 # Runtime stage
-FROM openjdk:17-jre-slim
+FROM amazoncorretto:17-alpine
 
 # Set working directory
 WORKDIR /app
 
 # Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache curl
 
 # Copy the built JAR from build stage
 COPY --from=build /app/target/agriculture-backend-0.0.1-SNAPSHOT.jar app.jar
 
 # Create non-root user for security
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN addgroup -g 1001 appuser && adduser -D -u 1001 -G appuser appuser
 RUN chown -R appuser:appuser /app
 USER appuser
 
