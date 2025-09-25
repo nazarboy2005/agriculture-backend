@@ -4,20 +4,14 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "java -jar app.jar",
+    "startCommand": "java -jar target/app.jar",
     "healthcheckPath": "/api/actuator/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   },
   "variables": {
-    "RAILWAY_CORS_ORIGIN": "https://agriculture-frontend-two.vercel.app",
-    "RAILWAY_CORS_METHODS": "GET,POST,PUT,DELETE,OPTIONS,PATCH",
-    "RAILWAY_CORS_HEADERS": "*",
-    "RAILWAY_CORS_CREDENTIALS": "true",
-    "RAILWAY_DISABLE_CORS": "false",
-    "RAILWAY_CORS_ENABLED": "true",
-    "CORS_ALLOWED_ORIGINS": "https://agriculture-frontend-two.vercel.app,https://agriculture-frontend.vercel.app,https://agriculture-frontend-btleirx65.vercel.app",
-    "CORS_ALLOW_CREDENTIALS": "true"
+    "SPRING_PROFILES_ACTIVE": "prod",
+    "APP_FRONTEND_URL": "https://agriculture-frontend-two.vercel.app"
   }
 }

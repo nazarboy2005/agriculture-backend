@@ -1,33 +1,47 @@
 @echo off
 echo ========================================
-echo Verifying Deployment
+echo VERIFYING RAILWAY DEPLOYMENT
 echo ========================================
 
 echo.
-echo Testing backend endpoints...
-echo.
-
-echo [1/4] Testing health endpoint...
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'https://agriculture-backend-production.railway.app/api/actuator/health' -Method GET; Write-Host 'Health Check: SUCCESS'; Write-Host 'Status:' $response.StatusCode; Write-Host 'Response:' $response.Content } catch { Write-Host 'Health Check: FAILED -' $_.Exception.Message }"
-
-echo.
-echo [2/4] Testing CORS preflight...
-powershell -Command "try { $headers = @{'Origin' = 'https://agriculture-frontend-btleirx65.vercel.app'; 'Access-Control-Request-Method' = 'POST'}; $response = Invoke-WebRequest -Uri 'https://agriculture-backend-production.railway.app/api/v1/auth/register' -Method OPTIONS -Headers $headers; Write-Host 'CORS Preflight: SUCCESS'; Write-Host 'Status:' $response.StatusCode } catch { Write-Host 'CORS Preflight: FAILED -' $_.Exception.Message }"
+echo [1/4] Checking if backend is running...
+curl -s -o nul -w "%%{http_code}" https://agriculture-backend-production.railway.app/api/actuator/health
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Backend is not responding!
+    pause
+    exit /b 1
+)
 
 echo.
-echo [3/4] Testing auth endpoint...
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'https://agriculture-backend-production.railway.app/api/v1/auth/register' -Method GET; Write-Host 'Auth Endpoint: SUCCESS'; Write-Host 'Status:' $response.StatusCode } catch { Write-Host 'Auth Endpoint: FAILED -' $_.Exception.Message }"
+echo [2/4] Testing CORS headers from Vercel origin...
+curl -X OPTIONS ^
+  -H "Origin: https://agriculture-frontend-two.vercel.app" ^
+  -H "Access-Control-Request-Method: POST" ^
+  -H "Access-Control-Request-Headers: Content-Type, Authorization" ^
+  -v ^
+  https://agriculture-backend-production.railway.app/api/v1/auth/register
 
 echo.
-echo [4/4] Testing CORS headers...
-powershell -Command "try { $response = Invoke-WebRequest -Uri 'https://agriculture-backend-production.railway.app/api/actuator/health' -Method GET; Write-Host 'CORS Headers Check:'; $response.Headers | Where-Object {$_.Key -like '*Access-Control*'} | ForEach-Object { Write-Host '  ' $_.Key ':' $_.Value } } catch { Write-Host 'CORS Headers: FAILED -' $_.Exception.Message }"
+echo [3/4] Testing actual POST request...
+curl -X POST ^
+  -H "Origin: https://agriculture-frontend-two.vercel.app" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"name\":\"Test User\",\"email\":\"test@example.com\",\"password\":\"password123\"}" ^
+  -v ^
+  https://agriculture-backend-production.railway.app/api/v1/auth/register
 
+echo.
+echo [4/4] Checking backend logs for CORS configuration...
+echo Look for these messages in Railway logs:
+echo - "Setting up CORS configuration..."
+echo - "Allowed CORS origins: [..., https://agriculture-frontend-two.vercel.app, ...]"
+echo - "CORS configuration completed successfully"
 echo.
 echo ========================================
-echo Verification Complete!
+echo VERIFICATION COMPLETED
 echo ========================================
 echo.
-echo If all tests show SUCCESS, your deployment is working correctly.
-echo You can now test your frontend at: https://agriculture-frontend-btleirx65.vercel.app
+echo If you see "Access-Control-Allow-Origin: https://agriculture-frontend-two.vercel.app"
+echo in the response headers above, the CORS fix is working!
 echo.
 pause
