@@ -87,7 +87,7 @@ public class SecurityConfig {
             "http://127.0.0.1:3000",
             frontendUrl,
             "https://agriculture-frontend.vercel.app",
-            "https://your-actual-frontend-name.vercel.app"  // Replace with your actual Vercel URL
+            "https://agriculture-frontend-btleirx65.vercel.app"  // Actual Vercel URL from error
         ));
         
         // Allow origin patterns for development
