@@ -1,0 +1,1 @@
+web: sh -c 'echo "Looking for any JAR file..."; JAR_FILE=$(find . -name "*.jar" -type f | head -1); if [ -n "$JAR_FILE" ]; then echo "Found JAR: $JAR_FILE"; java -jar "$JAR_FILE" --server.port=$PORT; else echo "No JAR files found!"; exit 1; fi'
