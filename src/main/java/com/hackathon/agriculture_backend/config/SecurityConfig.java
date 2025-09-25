@@ -97,23 +97,34 @@ public class SecurityConfig {
         log.info("Allowed CORS origins: {}", allowedOrigins);
         configuration.setAllowedOrigins(allowedOrigins);
         
-        // Allow origin patterns for additional flexibility
-        configuration.setAllowedOriginPatterns(Arrays.asList(
-            "http://localhost:*",
-            "http://127.0.0.1:*",
-            "https://*.vercel.app",
-            "https://accounts.google.com"
-        ));
-        
+        // Configure allowed methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+
+        // Configure allowed headers
+        configuration.setAllowedHeaders(Arrays.asList(
+            "Authorization",
+            "Content-Type",
+            "Accept",
+            "Origin",
+            "X-Requested-With",
+            "Access-Control-Request-Method",
+            "Access-Control-Request-Headers"
+        ));
+
+        // Allow credentials
         configuration.setAllowCredentials(true);
+
+        // Expose headers
+        configuration.setExposedHeaders(Arrays.asList(
+            "Access-Control-Allow-Origin",
+            "Access-Control-Allow-Credentials"
+        ));
+
+        // Max age for preflight requests
         configuration.setMaxAge(3600L);
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type", "Access-Control-Allow-Origin"));
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-        
         log.info("CORS configuration completed successfully");
         return source;
     }
