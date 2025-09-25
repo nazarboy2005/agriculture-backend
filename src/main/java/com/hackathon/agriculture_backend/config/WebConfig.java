@@ -16,7 +16,8 @@ public class WebConfig implements WebMvcConfigurer {
                     "http://localhost:3001",
                     "http://127.0.0.1:3001",
                     "https://agriculture-frontend-btleirx65.vercel.app",
-                    "https://agriculture-frontend.vercel.app"
+                    "https://agriculture-frontend.vercel.app",
+                    "https://agriculture-frontend-two.vercel.app"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("*")
