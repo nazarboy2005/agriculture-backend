@@ -24,6 +24,7 @@ RUN ./mvnw clean package -DskipTests -X
 
 # Debug: List what was created
 RUN ls -la target/
+RUN find target/ -name "*.jar" -type f
 
 # Runtime stage
 FROM amazoncorretto:17-alpine
