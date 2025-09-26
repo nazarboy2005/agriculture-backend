@@ -1,7 +1,7 @@
 package com.hackathon.agriculture_backend.service.impl;
 
 import com.hackathon.agriculture_backend.dto.UserSettingsDTO;
-import com.hackathon.agriculture_backend.entity.User;
+import com.hackathon.agriculture_backend.model.User;
 import com.hackathon.agriculture_backend.entity.UserSettings;
 import com.hackathon.agriculture_backend.repository.UserRepository;
 import com.hackathon.agriculture_backend.repository.UserSettingsRepository;

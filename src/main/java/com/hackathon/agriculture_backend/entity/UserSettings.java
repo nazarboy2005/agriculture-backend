@@ -2,6 +2,7 @@ package com.hackathon.agriculture_backend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import com.hackathon.agriculture_backend.model.User;
 
 @Entity
 @Table(name = "user_settings")
