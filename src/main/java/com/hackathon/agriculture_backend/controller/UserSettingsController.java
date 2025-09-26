@@ -1,7 +1,7 @@
 package com.hackathon.agriculture_backend.controller;
 
 import com.hackathon.agriculture_backend.dto.ApiResponse;
-import com.hackathon.agriculture_backend.dto.UserSettingsDto;
+import com.hackathon.agriculture_backend.dto.UserSettingsDTO;
 import com.hackathon.agriculture_backend.model.User;
 import com.hackathon.agriculture_backend.service.UserService;
 import com.hackathon.agriculture_backend.service.UserSettingsService;
@@ -21,7 +21,7 @@ public class UserSettingsController {
     private final UserService userService;
     
     @GetMapping
-    public ResponseEntity<ApiResponse<UserSettingsDto>> getUserSettings(Authentication authentication) {
+    public ResponseEntity<ApiResponse<UserSettingsDTO>> getUserSettings(Authentication authentication) {
         try {
             Long userId = getUserIdFromAuthentication(authentication);
             if (userId == null) {
@@ -29,7 +29,7 @@ public class UserSettingsController {
                     .body(ApiResponse.error("User not authenticated"));
             }
             
-            UserSettingsDto settings = userSettingsService.getUserSettings(userId);
+            UserSettingsDTO settings = userSettingsService.getUserSettings(userId);
             return ResponseEntity.ok(ApiResponse.success("User settings retrieved successfully", settings));
         } catch (Exception e) {
             log.error("Error retrieving user settings", e);
@@ -39,8 +39,8 @@ public class UserSettingsController {
     }
     
     @PutMapping
-    public ResponseEntity<ApiResponse<UserSettingsDto>> saveUserSettings(
-            @RequestBody UserSettingsDto settingsDto,
+    public ResponseEntity<ApiResponse<UserSettingsDTO>> saveUserSettings(
+            @RequestBody UserSettingsDTO settingsDto,
             Authentication authentication) {
         try {
             Long userId = getUserIdFromAuthentication(authentication);
@@ -49,7 +49,7 @@ public class UserSettingsController {
                     .body(ApiResponse.error("User not authenticated"));
             }
             
-            UserSettingsDto savedSettings = userSettingsService.saveUserSettings(userId, settingsDto);
+            UserSettingsDTO savedSettings = userSettingsService.saveUserSettings(userId, settingsDto);
             return ResponseEntity.ok(ApiResponse.success("User settings saved successfully", savedSettings));
         } catch (Exception e) {
             log.error("Error saving user settings", e);
@@ -77,7 +77,7 @@ public class UserSettingsController {
     }
     
     @GetMapping("/profile")
-    public ResponseEntity<ApiResponse<UserSettingsDto>> getProfileSettings(Authentication authentication) {
+    public ResponseEntity<ApiResponse<UserSettingsDTO>> getProfileSettings(Authentication authentication) {
         try {
             Long userId = getUserIdFromAuthentication(authentication);
             if (userId == null) {
@@ -85,9 +85,9 @@ public class UserSettingsController {
                     .body(ApiResponse.error("User not authenticated"));
             }
             
-            UserSettingsDto settings = userSettingsService.getUserSettings(userId);
+            UserSettingsDTO settings = userSettingsService.getUserSettings(userId);
             // Return only profile-related settings
-            UserSettingsDto profileSettings = new UserSettingsDto();
+            UserSettingsDTO profileSettings = new UserSettingsDTO();
             profileSettings.setPhone(settings.getPhone());
             profileSettings.setLocation(settings.getLocation());
             profileSettings.setBio(settings.getBio());
@@ -101,8 +101,8 @@ public class UserSettingsController {
     }
     
     @PutMapping("/profile")
-    public ResponseEntity<ApiResponse<UserSettingsDto>> saveProfileSettings(
-            @RequestBody UserSettingsDto profileDto,
+    public ResponseEntity<ApiResponse<UserSettingsDTO>> saveProfileSettings(
+            @RequestBody UserSettingsDTO profileDto,
             Authentication authentication) {
         try {
             Long userId = getUserIdFromAuthentication(authentication);
@@ -112,12 +112,12 @@ public class UserSettingsController {
             }
             
             // Get existing settings and update only profile fields
-            UserSettingsDto existingSettings = userSettingsService.getUserSettings(userId);
+            UserSettingsDTO existingSettings = userSettingsService.getUserSettings(userId);
             existingSettings.setPhone(profileDto.getPhone());
             existingSettings.setLocation(profileDto.getLocation());
             existingSettings.setBio(profileDto.getBio());
             
-            UserSettingsDto savedSettings = userSettingsService.saveUserSettings(userId, existingSettings);
+            UserSettingsDTO savedSettings = userSettingsService.saveUserSettings(userId, existingSettings);
             return ResponseEntity.ok(ApiResponse.success("Profile settings saved successfully", savedSettings));
         } catch (Exception e) {
             log.error("Error saving profile settings", e);
@@ -127,7 +127,7 @@ public class UserSettingsController {
     }
     
     @GetMapping("/notifications")
-    public ResponseEntity<ApiResponse<UserSettingsDto>> getNotificationSettings(Authentication authentication) {
+    public ResponseEntity<ApiResponse<UserSettingsDTO>> getNotificationSettings(Authentication authentication) {
         try {
             Long userId = getUserIdFromAuthentication(authentication);
             if (userId == null) {
@@ -135,9 +135,9 @@ public class UserSettingsController {
                     .body(ApiResponse.error("User not authenticated"));
             }
             
-            UserSettingsDto settings = userSettingsService.getUserSettings(userId);
+            UserSettingsDTO settings = userSettingsService.getUserSettings(userId);
             // Return only notification-related settings
-            UserSettingsDto notificationSettings = new UserSettingsDto();
+            UserSettingsDTO notificationSettings = new UserSettingsDTO();
             notificationSettings.setEmailAlerts(settings.getEmailAlerts());
             notificationSettings.setSmsAlerts(settings.getSmsAlerts());
             notificationSettings.setPushNotifications(settings.getPushNotifications());
@@ -153,8 +153,8 @@ public class UserSettingsController {
     }
     
     @PutMapping("/notifications")
-    public ResponseEntity<ApiResponse<UserSettingsDto>> saveNotificationSettings(
-            @RequestBody UserSettingsDto notificationDto,
+    public ResponseEntity<ApiResponse<UserSettingsDTO>> saveNotificationSettings(
+            @RequestBody UserSettingsDTO notificationDto,
             Authentication authentication) {
         try {
             Long userId = getUserIdFromAuthentication(authentication);
@@ -164,14 +164,14 @@ public class UserSettingsController {
             }
             
             // Get existing settings and update only notification fields
-            UserSettingsDto existingSettings = userSettingsService.getUserSettings(userId);
+            UserSettingsDTO existingSettings = userSettingsService.getUserSettings(userId);
             existingSettings.setEmailAlerts(notificationDto.getEmailAlerts());
             existingSettings.setSmsAlerts(notificationDto.getSmsAlerts());
             existingSettings.setPushNotifications(notificationDto.getPushNotifications());
             existingSettings.setWeeklyReports(notificationDto.getWeeklyReports());
             existingSettings.setSystemUpdates(notificationDto.getSystemUpdates());
             
-            UserSettingsDto savedSettings = userSettingsService.saveUserSettings(userId, existingSettings);
+            UserSettingsDTO savedSettings = userSettingsService.saveUserSettings(userId, existingSettings);
             return ResponseEntity.ok(ApiResponse.success("Notification settings saved successfully", savedSettings));
         } catch (Exception e) {
             log.error("Error saving notification settings", e);

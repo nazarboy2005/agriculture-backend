@@ -2,7 +2,7 @@ package com.hackathon.agriculture_backend.service.impl;
 
 import com.hackathon.agriculture_backend.dto.UserSettingsDTO;
 import com.hackathon.agriculture_backend.model.User;
-import com.hackathon.agriculture_backend.entity.UserSettings;
+import com.hackathon.agriculture_backend.model.UserSettings;
 import com.hackathon.agriculture_backend.repository.UserRepository;
 import com.hackathon.agriculture_backend.repository.UserSettingsRepository;
 import com.hackathon.agriculture_backend.service.UserSettingsService;
@@ -32,7 +32,7 @@ public class UserSettingsServiceImpl implements UserSettingsService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
             settings = new UserSettings();
-            settings.setUser(user);
+            settings.setUserId(userId);
             settings = userSettingsRepository.save(settings);
         }
         UserSettingsDTO dto = new UserSettingsDTO();
@@ -50,7 +50,7 @@ public class UserSettingsServiceImpl implements UserSettingsService {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("User not found"));
             settings = new UserSettings();
-            settings.setUser(user);
+            settings.setUserId(userId);
         }
         BeanUtils.copyProperties(settingsDTO, settings, "id");
         settings = userSettingsRepository.save(settings);

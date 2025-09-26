@@ -66,7 +66,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 String token = jwtUtil.generateToken(user);
                 
                 // Redirect to frontend with token
-                String redirectUrl = frontendUrl + "/oauth2/redirect?token=" + token + "&success=true";
+                String redirectUrl = frontendUrl + "/auth/callback/google?token=" + token + "&success=true";
                 getRedirectStrategy().sendRedirect(request, response, redirectUrl);
             } else {
                 super.onAuthenticationSuccess(request, response, authentication);
@@ -75,7 +75,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         } catch (Exception e) {
             log.error("Error during OAuth2 success handling: {}", e.getMessage(), e);
             // Redirect to frontend with error
-            String redirectUrl = frontendUrl + "/oauth2/redirect?success=false";
+            String redirectUrl = frontendUrl + "/auth/callback/google?success=false";
             getRedirectStrategy().sendRedirect(request, response, redirectUrl);
         }
     }

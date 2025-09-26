@@ -1,6 +1,6 @@
 package com.hackathon.agriculture_backend.service;
 
-import com.hackathon.agriculture_backend.dto.UserSettingsDto;
+import com.hackathon.agriculture_backend.dto.UserSettingsDTO;
 import com.hackathon.agriculture_backend.model.UserSettings;
 import com.hackathon.agriculture_backend.repository.UserSettingsRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ public class UserSettingsService {
     
     private final UserSettingsRepository userSettingsRepository;
     
-    public UserSettingsDto getUserSettings(Long userId) {
+    public UserSettingsDTO getUserSettings(Long userId) {
         log.info("Fetching user settings for user ID: {}", userId);
         
         Optional<UserSettings> settings = userSettingsRepository.findByUserId(userId);
@@ -27,12 +27,12 @@ public class UserSettingsService {
         } else {
             // Return default settings if none exist
             log.info("No settings found for user ID: {}, returning defaults", userId);
-            return new UserSettingsDto();
+            return new UserSettingsDTO();
         }
     }
     
     @Transactional
-    public UserSettingsDto saveUserSettings(Long userId, UserSettingsDto settingsDto) {
+    public UserSettingsDTO saveUserSettings(Long userId, UserSettingsDTO settingsDto) {
         log.info("Saving user settings for user ID: {}", userId);
         
         Optional<UserSettings> existingSettings = userSettingsRepository.findByUserId(userId);
@@ -66,8 +66,8 @@ public class UserSettingsService {
         }
     }
     
-    private UserSettingsDto convertToDto(UserSettings settings) {
-        UserSettingsDto dto = new UserSettingsDto();
+    private UserSettingsDTO convertToDto(UserSettings settings) {
+        UserSettingsDTO dto = new UserSettingsDTO();
         
         // Profile settings
         dto.setPhone(settings.getPhone());
@@ -101,7 +101,7 @@ public class UserSettingsService {
         return dto;
     }
     
-    private void updateSettingsFromDto(UserSettings settings, UserSettingsDto dto) {
+    private void updateSettingsFromDto(UserSettings settings, UserSettingsDTO dto) {
         // Profile settings
         settings.setPhone(dto.getPhone());
         settings.setLocation(dto.getLocation());
