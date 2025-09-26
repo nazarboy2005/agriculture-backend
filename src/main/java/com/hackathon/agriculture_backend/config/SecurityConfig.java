@@ -1,6 +1,7 @@
 package com.hackathon.agriculture_backend.config;
 
 import com.hackathon.agriculture_backend.security.JwtAuthenticationFilter;
+import com.hackathon.agriculture_backend.security.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -25,6 +26,7 @@ import org.springframework.beans.factory.annotation.Value;
 public class SecurityConfig {
     
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2SuccessHandler oauth2SuccessHandler;
     
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
@@ -60,8 +62,12 @@ public class SecurityConfig {
                 .requestMatchers("/v1/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
-            // OAuth2 configuration is disabled by default via spring.autoconfigure.exclude
-            // To enable OAuth2, remove the exclude property and configure environment variables
+            // OAuth2 login configuration
+            .oauth2Login(oauth2 -> oauth2
+                .loginPage("/oauth2/authorization/google")
+                .successHandler(oauth2SuccessHandler)
+                .failureUrl(frontendUrl + "/login?error=true")
+            )
             .logout(logout -> logout
                 .logoutSuccessUrl(frontendUrl + "/login")
                 .invalidateHttpSession(false)

@@ -437,6 +437,17 @@ public class AuthController {
         }
     }
     
+    @GetMapping("/oauth2/status")
+    public ResponseEntity<ApiResponse<String>> getOAuth2Status() {
+        try {
+            return ResponseEntity.ok(ApiResponse.success("OAuth2 is configured and ready"));
+        } catch (Exception e) {
+            log.error("Error checking OAuth2 status: {}", e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("OAuth2 status check failed: " + e.getMessage()));
+        }
+    }
+    
     // Development endpoint to verify email without going through email system
     @PostMapping("/verify-email-dev")
     public ResponseEntity<ApiResponse<String>> verifyEmailDev(@RequestBody Map<String, String> request) {
