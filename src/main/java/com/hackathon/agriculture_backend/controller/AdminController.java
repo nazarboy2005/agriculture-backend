@@ -21,12 +21,6 @@ import java.util.Map;
 @RequestMapping("/v1/admin")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {
-    "http://localhost:3000", 
-    "http://127.0.0.1:3000",
-    "https://agriculture-frontend-two.vercel.app",
-    "https://agriculture-frontend.vercel.app"
-}, allowCredentials = "true")
 public class AdminController {
     
     private final FarmerService farmerService;

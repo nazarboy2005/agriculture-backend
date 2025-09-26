@@ -22,12 +22,6 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/v1/chat")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {
-    "http://localhost:3000", 
-    "http://127.0.0.1:3000",
-    "https://agriculture-frontend-two.vercel.app",
-    "https://agriculture-frontend.vercel.app"
-}, allowCredentials = "true")
 public class ChatController {
     
     private final ChatService chatService;

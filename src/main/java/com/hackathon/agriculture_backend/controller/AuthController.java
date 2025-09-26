@@ -28,12 +28,6 @@ import java.util.Optional;
 @RequestMapping("/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {
-    "http://localhost:3000", 
-    "http://127.0.0.1:3000",
-    "https://agriculture-frontend-two.vercel.app",
-    "https://agriculture-frontend.vercel.app"
-}, allowCredentials = "true")
 public class AuthController {
     
     private static final Logger log = LoggerFactory.getLogger(AuthController.class);
