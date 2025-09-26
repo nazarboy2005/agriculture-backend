@@ -38,10 +38,11 @@ public class PlantDiseaseController {
                 return ResponseEntity.badRequest().build();
             }
 
-            // Get user ID from authentication - require authentication
+            // Get user ID from authentication - allow demo without auth
             Long userId = getUserIdFromAuthentication(authentication);
             if (userId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                userId = 1L; // Use demo user ID for unauthenticated requests
+                log.info("Using demo user ID for disease detection");
             }
 
             DetailedDiseaseDetectionResponse detailedResponse = plantDiseaseService.detectDisease(image, userId);

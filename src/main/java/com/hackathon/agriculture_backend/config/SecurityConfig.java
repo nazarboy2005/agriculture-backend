@@ -56,7 +56,7 @@ public class SecurityConfig {
                 .requestMatchers("/v1/smart-irrigation/**").permitAll() // Allow smart irrigation for demo purposes
                 .requestMatchers("/v1/farmer-zones/**").permitAll() // Allow zone management for demo purposes
                 .requestMatchers("/v1/recommendations/**").permitAll() // Allow recommendations for demo purposes
-                .requestMatchers("/disease/**").authenticated() // Require authentication for disease detection
+                .requestMatchers("/disease/**").permitAll() // Allow disease detection for demo purposes
                 .requestMatchers("/v1/farmers/**").authenticated()
                 .requestMatchers("/v1/alerts/**").authenticated()
                 .requestMatchers("/v1/admin/**").hasRole("ADMIN")

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -224,10 +225,13 @@ public class RecommendationService {
             // Get AI response using correct method signature
             String aiResponse;
             try {
-                aiResponse = geminiService.generatePersonalizedResponse(
+                CompletableFuture<String> aiFuture = geminiService.generatePersonalizedResponse(
                         farmer, prompt, new ArrayList<>(), 
                         "Weather: " + weatherData.getTempC() + "°C, " + weatherData.getHumidity() + "% humidity", 
-                        "Zone: " + request.getZoneName() + ", Crop: " + request.getCropType()).get();
+                        "Zone: " + request.getZoneName() + ", Crop: " + request.getCropType());
+                
+                // Wait for completion with timeout
+                aiResponse = aiFuture.get(30, TimeUnit.SECONDS);
             } catch (Exception e) {
                 log.error("Error getting AI response: {}", e.getMessage());
                 // Use fallback response
