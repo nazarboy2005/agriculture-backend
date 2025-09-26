@@ -33,3 +33,4 @@ public interface FarmerRepository extends JpaRepository<Farmer, Long> {
     List<Object[]> findCropDistribution();
 }
 
+

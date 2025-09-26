@@ -36,7 +36,6 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .headers(headers -> headers
@@ -77,57 +76,8 @@ public class SecurityConfig {
         return http.build();
     }
     
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        log.info("Setting up CORS configuration...");
-        log.info("Frontend URL from environment: {}", frontendUrl);
-        
-        CorsConfiguration configuration = new CorsConfiguration();
-        
-        // Explicit list of allowed origins
-        java.util.List<String> allowedOrigins = Arrays.asList(
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            "https://agriculture-frontend-two.vercel.app",  // Main production URL
-            "https://agriculture-frontend.vercel.app",
-            "https://agriculture-frontend-btleirx65.vercel.app",
-            frontendUrl  // From environment variable
-        );
-        
-        log.info("Allowed CORS origins: {}", allowedOrigins);
-        configuration.setAllowedOrigins(allowedOrigins);
-        
-        // Configure allowed methods
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-
-        // Configure allowed headers
-        configuration.setAllowedHeaders(Arrays.asList(
-            "Authorization",
-            "Content-Type",
-            "Accept",
-            "Origin",
-            "X-Requested-With",
-            "Access-Control-Request-Method",
-            "Access-Control-Request-Headers"
-        ));
-
-        // Allow credentials
-        configuration.setAllowCredentials(true);
-
-        // Expose headers
-        configuration.setExposedHeaders(Arrays.asList(
-            "Access-Control-Allow-Origin",
-            "Access-Control-Allow-Credentials"
-        ));
-
-        // Max age for preflight requests
-        configuration.setMaxAge(3600L);
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        log.info("CORS configuration completed successfully");
-        return source;
-    }
+    // CORS is now handled by CustomCorsFilter with highest precedence
+    // to override Railway's platform-level CORS injection
     
     @Bean
     public PasswordEncoder passwordEncoder() {

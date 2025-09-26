@@ -100,3 +100,4 @@ echo "- SMS alerts: ⚠️ (requires Twilio setup)"
 echo ""
 echo "🚀 Your Smart Irrigation Backend is working perfectly!"
 
+

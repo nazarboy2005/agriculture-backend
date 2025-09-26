@@ -51,3 +51,4 @@ public class AlertLog {
     private Instant createdAt = Instant.now();
 }
 
+

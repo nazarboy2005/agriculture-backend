@@ -40,3 +40,4 @@ public interface AlertLogRepository extends JpaRepository<AlertLog, Long> {
                                                   @Param("endTime") Instant endTime);
 }
 
+

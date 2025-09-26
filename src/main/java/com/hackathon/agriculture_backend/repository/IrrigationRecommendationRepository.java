@@ -48,3 +48,4 @@ public interface IrrigationRecommendationRepository extends JpaRepository<Irriga
                                       @Param("endDate") LocalDate endDate);
 }
 
+

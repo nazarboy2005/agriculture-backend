@@ -19,7 +19,7 @@ public class CustomCorsFilter {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         
-        // Set allowed origins
+        // Set allowed origins - explicitly list all allowed origins
         config.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",
             "http://127.0.0.1:3000",
