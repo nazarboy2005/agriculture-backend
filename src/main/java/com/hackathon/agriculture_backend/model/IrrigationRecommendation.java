@@ -5,9 +5,11 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "irrigation_recommendations")
@@ -74,6 +76,11 @@ public class IrrigationRecommendation {
     
     @Column(name = "updated_at")
     private Instant updatedAt = Instant.now();
+    
+    // One-to-Many relationship with AlertLog
+    @OneToMany(mappedBy = "recommendation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<AlertLog> alertLogs;
     
     @PreUpdate
     protected void onUpdate() {

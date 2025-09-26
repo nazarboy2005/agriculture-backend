@@ -5,8 +5,10 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
 @Table(name = "farmers")
@@ -53,6 +55,27 @@ public class Farmer {
     
     @Column(name = "updated_at")
     private Instant updatedAt = Instant.now();
+    
+    // One-to-Many relationships
+    @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<IrrigationRecommendation> irrigationRecommendations;
+    
+    @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<AlertLog> alertLogs;
+    
+    @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Chat> chats;
+    
+    @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<FarmerZone> farmerZones;
+    
+    @OneToMany(mappedBy = "farmer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<SavedIrrigationPlan> savedIrrigationPlans;
     
     @PreUpdate
     protected void onUpdate() {
