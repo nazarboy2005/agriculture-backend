@@ -35,14 +35,10 @@ public class TokenService {
         String token = generateSecureToken();
         LocalDateTime expiry = LocalDateTime.now().plusHours(emailConfirmationExpiryHours);
         
-        Token tokenEntity = new Token();
-        tokenEntity.setToken(token);
-        tokenEntity.setEmail(email);
-        tokenEntity.setType(Token.TokenType.EMAIL_CONFIRMATION);
-        tokenEntity.setExpiry(expiry);
+        Token tokenEntity = new Token(null, token, email, Token.TokenType.EMAIL_CONFIRMATION, expiry, null, null);
         
         tokenRepository.save(tokenEntity);
-        log.info("Generated email confirmation token for: {}", email);
+        System.out.println("Generated email confirmation token for: " + email);
         
         return token;
     }
@@ -55,14 +51,10 @@ public class TokenService {
         String token = generateSecureToken();
         LocalDateTime expiry = LocalDateTime.now().plusHours(passwordResetExpiryHours);
         
-        Token tokenEntity = new Token();
-        tokenEntity.setToken(token);
-        tokenEntity.setEmail(email);
-        tokenEntity.setType(Token.TokenType.PASSWORD_RESET);
-        tokenEntity.setExpiry(expiry);
+        Token tokenEntity = new Token(null, token, email, Token.TokenType.PASSWORD_RESET, expiry, null, null);
         
         tokenRepository.save(tokenEntity);
-        log.info("Generated password reset token for: {}", email);
+        System.out.println("Generated password reset token for: " + email);
         
         return token;
     }
@@ -71,20 +63,20 @@ public class TokenService {
         Optional<Token> tokenOpt = tokenRepository.findByTokenAndType(token, expectedType);
         
         if (tokenOpt.isEmpty()) {
-            log.warn("Token not found: {}", token);
+            System.out.println("Token not found: " + token);
             return false;
         }
         
         Token tokenEntity = tokenOpt.get();
         
         if (tokenEntity.isExpired()) {
-            log.warn("Token expired: {}", token);
+            System.out.println("Token expired: " + token);
             tokenRepository.delete(tokenEntity);
             return false;
         }
         
         if (tokenEntity.isUsed()) {
-            log.warn("Token already used: {}", token);
+            System.out.println("Token already used: " + token);
             return false;
         }
         
@@ -103,7 +95,7 @@ public class TokenService {
             Token tokenEntity = tokenOpt.get();
             tokenEntity.setUsedAt(LocalDateTime.now());
             tokenRepository.save(tokenEntity);
-            log.info("Token invalidated: {}", token);
+            System.out.println("Token invalidated: " + token);
         }
     }
     
