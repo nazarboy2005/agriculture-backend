@@ -138,6 +138,18 @@ public class PlantDiseaseController {
         return ResponseEntity.ok("Disease detection endpoint is working!");
     }
     
+    @GetMapping("/config")
+    public ResponseEntity<Map<String, Object>> getConfig() {
+        Map<String, Object> config = new HashMap<>();
+        config.put("service", "Plant Disease Detection");
+        config.put("status", "UP");
+        config.put("timestamp", System.currentTimeMillis());
+        config.put("endpoint", plantDiseaseService.getEndpoint());
+        config.put("timeout", plantDiseaseService.getTimeout());
+        config.put("apiKeysConfigured", plantDiseaseService.isApiKeysConfigured());
+        return ResponseEntity.ok(config);
+    }
+    
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> healthCheck() {
         Map<String, Object> health = new HashMap<>();

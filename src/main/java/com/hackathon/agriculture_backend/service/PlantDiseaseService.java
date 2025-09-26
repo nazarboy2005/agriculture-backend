@@ -47,14 +47,20 @@ public class PlantDiseaseService {
     private final Random random = new Random();
 
     public DetailedDiseaseDetectionResponse detectDisease(MultipartFile image, Long userId) throws IOException {
+        log.info("Starting disease detection for user: {}, image: {}", userId, image.getOriginalFilename());
+        
         if (image == null || image.isEmpty()) {
+            log.error("Image file is null or empty");
             throw new IllegalArgumentException("Image file is required");
         }
 
         // Check if API keys are configured
         if (apiKeysString == null || apiKeysString.trim().isEmpty() || apiKeysString.equals("your-plantid-api-key-1,your-plantid-api-key-2")) {
+            log.error("Plant.id API keys not configured. API keys: {}", apiKeysString);
             throw new IllegalStateException("Plant.id API keys not configured. Please configure PLANTID_API_KEYS environment variable.");
         }
+        
+        log.info("API keys configured, endpoint: {}, timeout: {}", endpoint, timeout);
 
         // Convert image to Base64
         String base64Image = Base64.getEncoder().encodeToString(image.getBytes());
@@ -159,14 +165,17 @@ public class PlantDiseaseService {
     }
 
     private DetailedDiseaseDetectionResponse makeApiCall(String requestBody, String apiKey) throws IOException {
+        log.info("Making API call to Plant.id endpoint: {}", endpoint);
         try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
             HttpPost httpPost = new HttpPost(endpoint);
             httpPost.setHeader("Api-Key", apiKey);
             httpPost.setHeader("Content-Type", "application/json");
             httpPost.setEntity(new StringEntity(requestBody, ContentType.APPLICATION_JSON));
 
+            log.info("Executing HTTP POST request to Plant.id API");
             try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
                 String responseBody = new String(response.getEntity().getContent().readAllBytes());
+                log.info("Plant.id API response status: {}, response length: {}", response.getCode(), responseBody.length());
                 
                 if (response.getCode() != 200 && response.getCode() != 201) {
                     log.error("Plant.id API call failed with status: {} and response: {}", response.getCode(), responseBody);
@@ -175,6 +184,9 @@ public class PlantDiseaseService {
 
                 return parseResponse(responseBody);
             }
+        } catch (Exception e) {
+            log.error("Exception during Plant.id API call: {}", e.getMessage(), e);
+            throw new IOException("Failed to call Plant.id API: " + e.getMessage(), e);
         }
     }
 
@@ -305,6 +317,19 @@ public class PlantDiseaseService {
             "Please try again later or contact support if the issue persists.",
             new ArrayList<>(), false, 0.0, "Service Unavailable", true, 0.8
         );
+    }
+    
+    public String getEndpoint() {
+        return endpoint;
+    }
+    
+    public int getTimeout() {
+        return timeout;
+    }
+    
+    public boolean isApiKeysConfigured() {
+        return apiKeysString != null && !apiKeysString.trim().isEmpty() && 
+               !apiKeysString.equals("your-plantid-api-key-1,your-plantid-api-key-2");
     }
     
     private Double addConfidenceVariation(Double originalConfidence) {
