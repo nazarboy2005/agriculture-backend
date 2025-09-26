@@ -1,10 +1,13 @@
 package com.hackathon.agriculture_backend.security;
 
+import com.hackathon.agriculture_backend.model.User;
+import com.hackathon.agriculture_backend.repository.UserRepository;
 import com.hackathon.agriculture_backend.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -14,7 +17,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ import java.util.Map;
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
+    private final UserRepository userRepository;
 
     @Value("${app.frontend.url:http://localhost:3000}")
     private String frontendUrl;
@@ -31,31 +35,47 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                                       Authentication authentication) throws IOException, ServletException {
         
         try {
-            OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-            Map<String, Object> attributes = oauth2User.getAttributes();
-            
-            // Extract user information from Google OAuth2 response
-            String email = (String) attributes.get("email");
-            String name = (String) attributes.get("name");
-            String picture = (String) attributes.get("picture");
-            
-            log.info("OAuth2 login successful for user: {}", email);
-            
-            // Create a simple user object for JWT generation
-            // You might want to save this user to your database here
-            String username = email != null ? email : "oauth2_user";
-            
-            // Generate JWT token
-            String token = jwtUtil.generateToken(username);
-            
-            // Redirect to frontend with token
-            String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/auth/callback")
-                    .queryParam("token", token)
-                    .queryParam("success", "true")
-                    .build().toUriString();
-            
-            log.info("Redirecting to: {}", targetUrl);
-            getRedirectStrategy().sendRedirect(request, response, targetUrl);
+            if (authentication instanceof OAuth2AuthenticationToken) {
+                OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
+                String email = oauth2User.getAttribute("email");
+                String name = oauth2User.getAttribute("name");
+                String picture = oauth2User.getAttribute("picture");
+                
+                log.info("OAuth2 login successful for user: {}", email);
+                
+                // Find or create user
+                Optional<User> userOptional = userRepository.findByEmail(email);
+                User user;
+                if (userOptional.isEmpty()) {
+                    user = new User();
+                    user.setEmail(email);
+                    user.setName(name);
+                    user.setProfilePictureUrl(picture);
+                    user.setPassword("oauth2user"); // Placeholder password, actual login is via OAuth2
+                    user.setRole(User.Role.USER);
+                    user.setEmailVerified(true);
+                    user.setIsEnabled(true);
+                    userRepository.save(user);
+                    log.info("Created new OAuth2 user: {}", email);
+                } else {
+                    user = userOptional.get();
+                    log.info("Found existing OAuth2 user: {}", email);
+                }
+                
+                // Generate JWT token using the User object (which implements UserDetails)
+                String token = jwtUtil.generateToken(user);
+                
+                // Redirect to frontend with token
+                String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/oauth2/redirect")
+                        .queryParam("token", token)
+                        .queryParam("success", "true")
+                        .build().toUriString();
+                
+                log.info("Redirecting to: {}", targetUrl);
+                getRedirectStrategy().sendRedirect(request, response, targetUrl);
+            } else {
+                super.onAuthenticationSuccess(request, response, authentication);
+            }
             
         } catch (Exception e) {
             log.error("Error in OAuth2 success handler: {}", e.getMessage(), e);
