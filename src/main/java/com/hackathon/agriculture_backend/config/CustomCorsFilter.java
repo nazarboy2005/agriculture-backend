@@ -1,8 +1,4 @@
 package com.hackathon.agriculture_backend.config;
 
-import org.springframework.context.annotation.Configuration;
-
-@Configuration
-public class CustomCorsFilter {
-    // Disabled - using NuclearCorsFilter instead
-}
+// This class is completely disabled to avoid bean conflicts
+// All CORS handling is now done by NuclearCorsFilter

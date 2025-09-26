@@ -44,7 +44,7 @@ public class NuclearCorsFilter {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public OncePerRequestFilter nuclearCorsFilter() {
+    public OncePerRequestFilter nuclearCorsOverrideFilter() {
         return new OncePerRequestFilter() {
             @Override
             protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
