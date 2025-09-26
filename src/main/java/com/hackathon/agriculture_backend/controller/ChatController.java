@@ -34,18 +34,18 @@ public class ChatController {
             @RequestParam String message,
             @RequestParam(defaultValue = "GENERAL") String messageType) {
         
-        log.info("Received chat message from farmer ID: {}", farmerId);
+        System.out.println("Received chat message from farmer ID: " + farmerId);
         
         // Try the main chat service first, fallback to simple chat service
         return chatService.sendMessage(farmerId, message, messageType)
                 .thenApply(chat -> ResponseEntity.ok(ApiResponse.success("Message processed successfully", chat)))
                 .exceptionally(throwable -> {
-                    log.error("Main chat service failed, trying simple chat service: {}", throwable.getMessage());
+                    System.out.println("Main chat service failed, trying simple chat service: " + throwable.getMessage());
                     // Use simple chat service as fallback
                     return simpleChatService.sendMessage(farmerId, message, messageType)
                             .thenApply(simpleChat -> ResponseEntity.ok(ApiResponse.success("Message processed successfully", simpleChat)))
                             .exceptionally(simpleThrowable -> {
-                                log.error("Both chat services failed: {}", simpleThrowable.getMessage());
+                                System.out.println("Both chat services failed: " + simpleThrowable.getMessage());
                                 // Final fallback response
                                 Chat fallbackChat = new Chat();
                                 fallbackChat.setId(1L);
@@ -59,13 +59,13 @@ public class ChatController {
     
     @GetMapping("/history/{farmerId}")
     public ResponseEntity<ApiResponse<List<Chat>>> getChatHistory(@PathVariable Long farmerId) {
-        log.info("Fetching chat history for farmer ID: {}", farmerId);
+        System.out.println("Fetching chat history for farmer ID: " + farmerId);
         
         try {
             List<Chat> chats = chatService.getChatHistory(farmerId);
             return ResponseEntity.ok(ApiResponse.success(chats));
         } catch (Exception e) {
-            log.error("Error fetching chat history: {}", e.getMessage());
+            System.out.println("Error fetching chat history: " + e.getMessage());
             // Return empty list instead of 500 error for better UX
             return ResponseEntity.ok(ApiResponse.success(List.of()));
         }
@@ -77,14 +77,14 @@ public class ChatController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         
-        log.info("Fetching paginated chat history for farmer ID: {}", farmerId);
+        System.out.println("Fetching paginated chat history for farmer ID: " + farmerId);
         
         try {
             Pageable pageable = PageRequest.of(page, size);
             Page<Chat> chats = chatService.getChatHistory(farmerId, pageable);
             return ResponseEntity.ok(ApiResponse.success(chats));
         } catch (Exception e) {
-            log.error("Error fetching paginated chat history: {}", e.getMessage());
+            System.out.println("Error fetching paginated chat history: " + e.getMessage());
             return ResponseEntity.status(500)
                     .body(ApiResponse.error("Failed to fetch chat history: " + e.getMessage()));
         }
@@ -95,14 +95,14 @@ public class ChatController {
             @PathVariable Long farmerId,
             @PathVariable String messageType) {
         
-        log.info("Fetching chat history by type for farmer ID: {} and type: {}", farmerId, messageType);
+        System.out.println("Fetching chat history by type for farmer ID: " + farmerId + " and type: " + messageType);
         
         try {
             Chat.MessageType type = Chat.MessageType.valueOf(messageType.toUpperCase());
             List<Chat> chats = chatService.getChatHistoryByType(farmerId, type);
             return ResponseEntity.ok(ApiResponse.success(chats));
         } catch (Exception e) {
-            log.error("Error fetching chat history by type: {}", e.getMessage());
+            System.out.println("Error fetching chat history by type: " + e.getMessage());
             return ResponseEntity.status(500)
                     .body(ApiResponse.error("Failed to fetch chat history: " + e.getMessage()));
         }
@@ -113,13 +113,13 @@ public class ChatController {
             @PathVariable Long farmerId,
             @RequestParam String query) {
         
-        log.info("Searching chat history for farmer ID: {} with query: {}", farmerId, query);
+        System.out.println("Searching chat history for farmer ID: " + farmerId + " with query: " + query);
         
         try {
             List<Chat> chats = chatService.searchChatHistory(farmerId, query);
             return ResponseEntity.ok(ApiResponse.success(chats));
         } catch (Exception e) {
-            log.error("Error searching chat history: {}", e.getMessage());
+            System.out.println("Error searching chat history: " + e.getMessage());
             return ResponseEntity.status(500)
                     .body(ApiResponse.error("Failed to search chat history: " + e.getMessage()));
         }
@@ -130,13 +130,13 @@ public class ChatController {
             @PathVariable Long farmerId,
             @RequestParam(defaultValue = "10") int limit) {
         
-        log.info("Fetching recent chats for farmer ID: {} with limit: {}", farmerId, limit);
+        System.out.println("Fetching recent chats for farmer ID: " + farmerId + " with limit: " + limit);
         
         try {
             List<Chat> chats = chatService.getRecentChats(farmerId, limit);
             return ResponseEntity.ok(ApiResponse.success(chats));
         } catch (Exception e) {
-            log.error("Error fetching recent chats: {}", e.getMessage());
+            System.out.println("Error fetching recent chats: " + e.getMessage());
             return ResponseEntity.status(500)
                     .body(ApiResponse.error("Failed to fetch recent chats: " + e.getMessage()));
         }
@@ -148,13 +148,13 @@ public class ChatController {
             @RequestParam Boolean isHelpful,
             @RequestParam(required = false) String feedback) {
         
-        log.info("Updating feedback for chat ID: {}", chatId);
+        System.out.println("Updating feedback for chat ID: " + chatId);
         
         try {
             Chat chat = chatService.updateFeedback(chatId, isHelpful, feedback);
             return ResponseEntity.ok(ApiResponse.success("Feedback updated successfully", chat));
         } catch (Exception e) {
-            log.error("Error updating feedback: {}", e.getMessage());
+            System.out.println("Error updating feedback: " + e.getMessage());
             return ResponseEntity.status(500)
                     .body(ApiResponse.error("Failed to update feedback: " + e.getMessage()));
         }
@@ -162,7 +162,7 @@ public class ChatController {
     
     @GetMapping("/stats/{farmerId}")
     public ResponseEntity<ApiResponse<Object>> getChatStats(@PathVariable Long farmerId) {
-        log.info("Fetching chat statistics for farmer ID: {}", farmerId);
+        System.out.println("Fetching chat statistics for farmer ID: " + farmerId);
         
         try {
             List<Object[]> messageTypeStats = chatService.getMessageTypeStats(farmerId);
@@ -177,7 +177,7 @@ public class ChatController {
             
             return ResponseEntity.ok(ApiResponse.success("Chat statistics retrieved successfully", stats));
         } catch (Exception e) {
-            log.error("Error fetching chat statistics: {}", e.getMessage());
+            System.out.println("Error fetching chat statistics: " + e.getMessage());
             return ResponseEntity.status(500)
                     .body(ApiResponse.error("Failed to fetch chat statistics: " + e.getMessage()));
         }
@@ -190,13 +190,13 @@ public class ChatController {
     
     @GetMapping("/health")
     public ResponseEntity<ApiResponse<String>> healthCheck() {
-        log.info("Chat service health check");
+        System.out.println("Chat service health check");
         return ResponseEntity.ok(ApiResponse.success("Chat service is running"));
     }
     
     @GetMapping("/test")
     public ResponseEntity<ApiResponse<String>> testEndpoint() {
-        log.info("Chat test endpoint called");
+        System.out.println("Chat test endpoint called");
         return ResponseEntity.ok(ApiResponse.success("Chat API is working"));
     }
     
@@ -206,12 +206,12 @@ public class ChatController {
             @RequestParam String message,
             @RequestParam(defaultValue = "GENERAL") String messageType) {
         
-        log.info("Received simple chat message from farmer ID: {}", farmerId);
+        System.out.println("Received simple chat message from farmer ID: " + farmerId);
         
         return simpleChatService.sendMessage(farmerId, message, messageType)
                 .thenApply(chat -> ResponseEntity.ok(ApiResponse.success("Simple message processed successfully", chat)))
                 .exceptionally(throwable -> {
-                    log.error("Simple chat service failed: {}", throwable.getMessage());
+                    System.out.println("Simple chat service failed: " + throwable.getMessage());
                     // Final fallback response
                     Chat fallbackChat = new Chat();
                     fallbackChat.setId(1L);
@@ -229,12 +229,12 @@ public class ChatController {
             @RequestParam Boolean isHealthy,
             @RequestParam String healthStatus) {
         
-        log.info("Generating disease treatment for: {} with confidence: {}", diseaseName, confidence);
+        System.out.println("Generating disease treatment for: " + diseaseName + " with confidence: " + confidence);
         
         return chatService.generateDiseaseTreatment(diseaseName, confidence, isHealthy, healthStatus)
                 .thenApply(chat -> ResponseEntity.ok(ApiResponse.success("Disease treatment generated successfully", chat)))
                 .exceptionally(throwable -> {
-                    log.error("Error generating disease treatment: {}", throwable.getMessage());
+                    System.out.println("Error generating disease treatment: " + throwable.getMessage());
                     return ResponseEntity.ok(ApiResponse.success("Disease treatment generated successfully", 
                         new Chat() {{
                             setUserMessage("Disease treatment request for: " + diseaseName);

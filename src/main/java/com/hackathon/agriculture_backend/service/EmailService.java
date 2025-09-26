@@ -43,7 +43,6 @@ public class EmailService {
         
         if (!emailEnabled || !mailSender.isPresent()) {
             log.warn("Email sending is disabled or mail sender not available. Skipping email confirmation for: {}", to);
-            System.out.println("EMAIL DEBUG: Email sending is disabled or mail sender not available");
             return;
         }
         
@@ -62,20 +61,24 @@ public class EmailService {
             helper.setText(emailContent, true);
             
             mailSender.get().send(message);
-            log.info("Email confirmation sent to: {}", to);
-            System.out.println("EMAIL DEBUG: Email confirmation successfully sent to: " + to);
+            log.info("Email confirmation sent successfully to: {}", to);
             
         } catch (MessagingException e) {
             log.error("Failed to send email confirmation to: {} - Error: {}", to, e.getMessage());
+            log.error("MessagingException details: {}", e.getCause() != null ? e.getCause().getMessage() : "No cause");
             // Don't throw exception, just log the error to prevent registration failure
             log.warn("Email sending failed, but user registration will continue. Check email configuration.");
         } catch (Exception e) {
             log.error("Unexpected error sending email confirmation to: {} - Error: {}", to, e.getMessage());
+            log.error("Exception details: {}", e.getCause() != null ? e.getCause().getMessage() : "No cause");
             log.warn("Email sending failed, but user registration will continue. Check email configuration.");
         }
     }
     
     public void sendPasswordResetEmail(String to, String name, String resetToken) {
+        log.info("Attempting to send password reset email to: {}", to);
+        log.info("Email enabled: {}, Mail sender present: {}", emailEnabled, mailSender.isPresent());
+        
         if (!emailEnabled || !mailSender.isPresent()) {
             log.warn("Email sending is disabled or mail sender not available. Skipping password reset email for: {}", to);
             return;
@@ -96,14 +99,16 @@ public class EmailService {
             helper.setText(emailContent, true);
             
             mailSender.get().send(message);
-            log.info("Password reset email sent to: {}", to);
+            log.info("Password reset email sent successfully to: {}", to);
             
         } catch (MessagingException e) {
             log.error("Failed to send password reset email to: {} - Error: {}", to, e.getMessage());
+            log.error("MessagingException details: {}", e.getCause() != null ? e.getCause().getMessage() : "No cause");
             // Don't throw exception, just log the error to prevent password reset failure
             log.warn("Email sending failed, but password reset will continue. Check email configuration.");
         } catch (Exception e) {
             log.error("Unexpected error sending password reset email to: {} - Error: {}", to, e.getMessage());
+            log.error("Exception details: {}", e.getCause() != null ? e.getCause().getMessage() : "No cause");
             log.warn("Email sending failed, but password reset will continue. Check email configuration.");
         }
     }
