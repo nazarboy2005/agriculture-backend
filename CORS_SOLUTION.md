@@ -1,15 +1,15 @@
 # CORS Solution
 
 ## Problem
-Frontend at `https://agriculture-frontend-two.vercel.app` was blocked by CORS policy when making requests to the backend.
+Frontend at `https://agriculture-frontend-two.vercel.app` was blocked by CORS policy. The issue was using `Access-Control-Allow-Origin: *` with `allowCredentials(true)`, which browsers don't allow.
 
 ## Solution
-Simple Spring Boot CORS configuration with exact domain matching.
+Spring Boot CORS configuration with **exact domain matching** instead of wildcard.
 
-## Files
+## Key Files
 - `src/main/java/com/hackathon/agriculture_backend/config/CorsConfig.java` - CORS configuration
 - `src/main/java/com/hackathon/agriculture_backend/config/SecurityConfig.java` - Security with CORS enabled
-- `src/main/resources/application-prod.properties` - Production CORS settings
+- `src/main/resources/application-prod.properties` - Production settings
 
 ## Configuration
 ```java
@@ -28,13 +28,18 @@ public class CorsConfig {
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD")
                         .allowedHeaders("*")
-                        .allowCredentials(true)
+                        .allowCredentials(true)  // Requires exact domain, not "*"
                         .maxAge(3600);
             }
         };
     }
 }
 ```
+
+## Why This Works
+- **Exact domain matching** instead of wildcard `*`
+- **allowCredentials(true)** works with specific domains
+- **No wildcard + credentials conflict**
 
 ## Deploy
 ```bash
