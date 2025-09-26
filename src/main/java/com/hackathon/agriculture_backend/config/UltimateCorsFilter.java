@@ -28,7 +28,7 @@ public class UltimateCorsFilter {
 
     @Bean
     @Order(Ordered.HIGHEST_PRECEDENCE)
-    public OncePerRequestFilter ultimateCorsFilter() {
+    public OncePerRequestFilter ultimateCorsOverrideFilter() {
         return new OncePerRequestFilter() {
             @Override
             protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -45,25 +45,18 @@ public class UltimateCorsFilter {
                 System.out.println("URI: " + requestURI);
                 System.out.println("Request URL: " + request.getRequestURL());
                 
-                // Check if origin is allowed
-                boolean isOriginAllowed = origin != null && ALLOWED_ORIGINS.contains(origin);
+                // ULTIMATE CORS HEADER OVERRIDE - ALLOW ALL ORIGINS
+                response.setHeader("Access-Control-Allow-Origin", "*");
+                response.setHeader("Access-Control-Allow-Credentials", "true");
+                response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD");
+                response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, Origin, X-Requested-With, Access-Control-Request-Method, Access-Control-Request-Headers, Cache-Control, Pragma");
+                response.setHeader("Access-Control-Max-Age", "86400");
+                response.setHeader("Access-Control-Expose-Headers", "Authorization, Content-Type");
                 
-                if (isOriginAllowed) {
-                    // ULTIMATE CORS HEADER OVERRIDE
-                    response.setHeader("Access-Control-Allow-Origin", origin);
-                    response.setHeader("Access-Control-Allow-Credentials", "true");
-                    response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD");
-                    response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept, Origin, X-Requested-With, Access-Control-Request-Method, Access-Control-Request-Headers, Cache-Control, Pragma");
-                    response.setHeader("Access-Control-Max-Age", "86400");
-                    response.setHeader("Access-Control-Expose-Headers", "Authorization, Content-Type");
-                    
-                    // REMOVE RAILWAY'S CORS HEADERS
-                    response.setHeader("Vary", "Origin");
-                    
-                    System.out.println("ULTIMATE CORS: Headers set for origin: " + origin);
-                } else {
-                    System.out.println("ULTIMATE CORS: Origin not allowed: " + origin);
-                }
+                // REMOVE RAILWAY'S CORS HEADERS
+                response.setHeader("Vary", "Origin");
+                
+                System.out.println("ULTIMATE CORS: Headers set for ALL origins (including: " + origin + ")");
                 
                 // Handle preflight requests
                 if ("OPTIONS".equals(method)) {
