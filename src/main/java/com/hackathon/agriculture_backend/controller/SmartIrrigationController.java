@@ -16,7 +16,12 @@ import java.util.List;
 @RequestMapping("/v1/smart-irrigation")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
+@CrossOrigin(origins = {
+    "http://localhost:3000", 
+    "http://127.0.0.1:3000",
+    "https://agriculture-frontend-two.vercel.app",
+    "https://agriculture-frontend.vercel.app"
+}, allowCredentials = "true")
 public class SmartIrrigationController {
     
     private final SmartIrrigationService smartIrrigationService;

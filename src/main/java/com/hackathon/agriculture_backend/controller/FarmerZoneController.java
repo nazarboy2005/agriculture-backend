@@ -14,7 +14,12 @@ import java.util.List;
 @RequestMapping("/v1/farmer-zones")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {"http://localhost:3000", "http://127.0.0.1:3000"})
+@CrossOrigin(origins = {
+    "http://localhost:3000", 
+    "http://127.0.0.1:3000",
+    "https://agriculture-frontend-two.vercel.app",
+    "https://agriculture-frontend.vercel.app"
+}, allowCredentials = "true")
 public class FarmerZoneController {
     
     private final FarmerZoneService farmerZoneService;
