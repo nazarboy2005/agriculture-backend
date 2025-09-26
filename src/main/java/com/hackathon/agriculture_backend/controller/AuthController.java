@@ -448,6 +448,59 @@ public class AuthController {
         }
     }
     
+    @PostMapping("/update-password")
+    public ResponseEntity<ApiResponse<String>> updatePassword(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            String currentPassword = request.get("currentPassword");
+            String newPassword = request.get("newPassword");
+            
+            if (email == null || currentPassword == null || newPassword == null) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Email, current password, and new password are required"));
+            }
+            
+            Optional<User> userOpt = userService.findByEmailOptional(email);
+            if (userOpt.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("User not found"));
+            }
+            
+            User user = userOpt.get();
+            
+            // Check if user has a password (not OAuth user)
+            if (user.getPassword() == null) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("This account uses Google login. Please use Google to sign in."));
+            }
+            
+            // Verify current password
+            if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Current password is incorrect"));
+            }
+            
+            // Validate new password strength
+            if (newPassword.length() < 8) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("New password must be at least 8 characters long"));
+            }
+            
+            // Update password
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userService.save(user);
+            
+            log.info("Password updated successfully for user: {}", email);
+            
+            return ResponseEntity.ok(ApiResponse.success("Password updated successfully"));
+            
+        } catch (Exception e) {
+            log.error("Error updating password: {}", e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("Password update failed: " + e.getMessage()));
+        }
+    }
+    
     // Development endpoint to verify email without going through email system
     @PostMapping("/verify-email-dev")
     public ResponseEntity<ApiResponse<String>> verifyEmailDev(@RequestBody Map<String, String> request) {

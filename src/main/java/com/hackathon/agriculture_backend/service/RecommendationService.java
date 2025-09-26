@@ -222,10 +222,21 @@ public class RecommendationService {
             farmer.setPreferredCrop(request.getCropType());
             
             // Get AI response using correct method signature
-            String aiResponse = geminiService.generatePersonalizedResponse(
-                    farmer, prompt, new ArrayList<>(), 
-                    "Weather: " + weatherData.getTempC() + "°C, " + weatherData.getHumidity() + "% humidity", 
-                    "Zone: " + request.getZoneName() + ", Crop: " + request.getCropType()).join();
+            String aiResponse;
+            try {
+                aiResponse = geminiService.generatePersonalizedResponse(
+                        farmer, prompt, new ArrayList<>(), 
+                        "Weather: " + weatherData.getTempC() + "°C, " + weatherData.getHumidity() + "% humidity", 
+                        "Zone: " + request.getZoneName() + ", Crop: " + request.getCropType()).get();
+            } catch (Exception e) {
+                log.error("Error getting AI response: {}", e.getMessage());
+                // Use fallback response
+                aiResponse = "Based on current weather conditions, here are your irrigation recommendations:\n" +
+                        "1. Monitor soil moisture levels daily\n" +
+                        "2. Adjust irrigation based on temperature and humidity\n" +
+                        "3. Consider heat alerts for optimal timing\n" +
+                        "4. Maintain consistent watering schedule";
+            }
             
             // Parse AI response into structured recommendations
             List<RecommendationResponseDto> recommendations = parseAIResponseToRecommendations(
