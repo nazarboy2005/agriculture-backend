@@ -49,3 +49,4 @@ public interface IrrigationRecommendationRepository extends JpaRepository<Irriga
 }
 
 
+

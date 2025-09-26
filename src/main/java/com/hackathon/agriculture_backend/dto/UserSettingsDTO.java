@@ -1,37 +1,40 @@
 package com.hackathon.agriculture_backend.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-public class UserSettingsDTO {
-    private Long id;
-
+@NoArgsConstructor
+@AllArgsConstructor
+public class UserSettingsDto {
+    
     // Profile settings
     private String phone;
     private String location;
     private String bio;
-
+    
     // Notification settings
-    private boolean emailAlerts;
-    private boolean smsAlerts;
-    private boolean pushNotifications;
-    private boolean weeklyReports;
-    private boolean systemUpdates;
-
+    private Boolean emailAlerts = true;
+    private Boolean smsAlerts = false;
+    private Boolean pushNotifications = true;
+    private Boolean weeklyReports = true;
+    private Boolean systemUpdates = false;
+    
     // Appearance settings
-    private String theme;
-    private String language;
-    private String timezone;
-    private String dateFormat;
-
+    private String theme = "light";
+    private String language = "en";
+    private String timezone = "UTC";
+    private String dateFormat = "MM/DD/YYYY";
+    
     // Privacy settings
-    private String profileVisibility;
-    private boolean dataSharing;
-    private boolean analytics;
-    private boolean marketing;
-
+    private String profileVisibility = "public";
+    private Boolean dataSharing = false;
+    private Boolean analytics = true;
+    private Boolean marketing = false;
+    
     // Security settings
-    private boolean twoFactorAuth;
-    private int sessionTimeout;
-    private boolean loginNotifications;
+    private Boolean twoFactorAuth = false;
+    private Integer sessionTimeout = 30;
+    private Boolean loginNotifications = true;
 }

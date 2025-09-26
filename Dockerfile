@@ -27,7 +27,7 @@ RUN ls -la target/
 RUN find target/ -name "*.jar" -type f
 
 # Verify JAR file exists
-RUN if [ ! -f target/app.jar ]; then echo "ERROR: JAR file not created!"; exit 1; else echo "SUCCESS: JAR file created successfully"; fi
+RUN if [ ! -f target/agriculture-backend-0.0.1-SNAPSHOT.jar ]; then echo "ERROR: JAR file not created!"; exit 1; else echo "SUCCESS: JAR file created successfully"; fi
 
 # Runtime stage
 FROM amazoncorretto:17-alpine
@@ -39,7 +39,7 @@ WORKDIR /app
 RUN apk add --no-cache curl
 
 # Copy the built JAR from build stage
-COPY --from=build /app/target/app.jar app.jar
+COPY --from=build /app/target/agriculture-backend-0.0.1-SNAPSHOT.jar app.jar
 
 # Create non-root user for security
 RUN addgroup -g 1001 appuser && adduser -D -u 1001 -G appuser appuser
