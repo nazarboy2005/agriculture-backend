@@ -1,0 +1,27 @@
+# Simplified Dockerfile for troubleshooting
+FROM maven:3.9.4-eclipse-temurin-17
+
+# Set working directory
+WORKDIR /app
+
+# Copy all files
+COPY . .
+
+# Make Maven wrapper executable
+RUN chmod +x ./mvnw
+
+# Build the application with verbose output
+RUN ./mvnw clean package -DskipTests -X
+
+# Debug: List what was created
+RUN ls -la target/
+RUN find target/ -name "*.jar" -type f
+
+# Verify JAR file exists
+RUN if [ ! -f target/agriculture-backend-0.0.1-SNAPSHOT.jar ]; then echo "ERROR: JAR file not created!"; exit 1; else echo "SUCCESS: JAR file created successfully"; fi
+
+# Expose port
+EXPOSE 9090
+
+# Run the application
+CMD ["java", "-jar", "target/agriculture-backend-0.0.1-SNAPSHOT.jar"]
