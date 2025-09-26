@@ -66,26 +66,17 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 String token = jwtUtil.generateToken(user);
                 
                 // Redirect to frontend with token
-                String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/oauth2/redirect")
-                        .queryParam("token", token)
-                        .queryParam("success", "true")
-                        .build().toUriString();
-                
-                log.info("Redirecting to: {}", targetUrl);
-                getRedirectStrategy().sendRedirect(request, response, targetUrl);
+                String redirectUrl = frontendUrl + "/oauth2/redirect?token=" + token + "&success=true";
+                getRedirectStrategy().sendRedirect(request, response, redirectUrl);
             } else {
                 super.onAuthenticationSuccess(request, response, authentication);
             }
             
         } catch (Exception e) {
-            log.error("Error in OAuth2 success handler: {}", e.getMessage(), e);
-            
+            log.error("Error during OAuth2 success handling: {}", e.getMessage(), e);
             // Redirect to frontend with error
-            String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/login")
-                    .queryParam("error", "oauth2_error")
-                    .build().toUriString();
-            
-            getRedirectStrategy().sendRedirect(request, response, targetUrl);
+            String redirectUrl = frontendUrl + "/oauth2/redirect?success=false";
+            getRedirectStrategy().sendRedirect(request, response, redirectUrl);
         }
     }
 }
