@@ -41,7 +41,7 @@ public class UserSettingsServiceImpl implements UserSettingsService {
     }
 
     @Override
-    public UserSettingsDTO updateUserSettings(Long userId, UserSettingsDTO settingsDTO) {
+    public UserSettingsDTO saveUserSettings(Long userId, UserSettingsDTO settingsDTO) {
         Optional<UserSettings> optionalSettings = userSettingsRepository.findByUserId(userId);
         UserSettings settings;
         if (optionalSettings.isPresent()) {
@@ -57,5 +57,13 @@ public class UserSettingsServiceImpl implements UserSettingsService {
         UserSettingsDTO resultDTO = new UserSettingsDTO();
         BeanUtils.copyProperties(settings, resultDTO);
         return resultDTO;
+    }
+    
+    @Override
+    public void deleteUserSettings(Long userId) {
+        Optional<UserSettings> optionalSettings = userSettingsRepository.findByUserId(userId);
+        if (optionalSettings.isPresent()) {
+            userSettingsRepository.delete(optionalSettings.get());
+        }
     }
 }
