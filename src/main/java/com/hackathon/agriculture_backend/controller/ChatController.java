@@ -3,6 +3,7 @@ package com.hackathon.agriculture_backend.controller;
 import com.hackathon.agriculture_backend.dto.ApiResponse;
 import com.hackathon.agriculture_backend.model.Chat;
 import com.hackathon.agriculture_backend.service.ChatService;
+import com.hackathon.agriculture_backend.service.SimpleChatService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 public class ChatController {
     
     private final ChatService chatService;
+    private final SimpleChatService simpleChatService;
     
     @PostMapping("/send")
     public CompletableFuture<ResponseEntity<ApiResponse<Chat>>> sendMessage(
@@ -34,17 +36,24 @@ public class ChatController {
         
         log.info("Received chat message from farmer ID: {}", farmerId);
         
+        // Try the main chat service first, fallback to simple chat service
         return chatService.sendMessage(farmerId, message, messageType)
                 .thenApply(chat -> ResponseEntity.ok(ApiResponse.success("Message processed successfully", chat)))
                 .exceptionally(throwable -> {
-                    log.error("Error processing chat message: {}", throwable.getMessage());
-                    // Return a mock response instead of 500 error
-                    Chat mockChat = new Chat();
-                    mockChat.setId(1L);
-                    mockChat.setUserMessage(message);
-                    mockChat.setAiResponse("I'm here to help with your agricultural questions. Please ask me anything about farming, irrigation, or crop management.");
-                    mockChat.setMessageType(Chat.MessageType.valueOf(messageType.toUpperCase()));
-                    return ResponseEntity.ok(ApiResponse.success("Message processed successfully", mockChat));
+                    log.error("Main chat service failed, trying simple chat service: {}", throwable.getMessage());
+                    // Use simple chat service as fallback
+                    return simpleChatService.sendMessage(farmerId, message, messageType)
+                            .thenApply(simpleChat -> ResponseEntity.ok(ApiResponse.success("Message processed successfully", simpleChat)))
+                            .exceptionally(simpleThrowable -> {
+                                log.error("Both chat services failed: {}", simpleThrowable.getMessage());
+                                // Final fallback response
+                                Chat fallbackChat = new Chat();
+                                fallbackChat.setId(1L);
+                                fallbackChat.setUserMessage(message);
+                                fallbackChat.setAiResponse("Hello! I'm your AI farming assistant. I'm here to help you with agricultural questions. Please ask me about crops, irrigation, plant diseases, weather, or any farming-related topics.");
+                                fallbackChat.setMessageType(Chat.MessageType.valueOf(messageType.toUpperCase()));
+                                return ResponseEntity.ok(ApiResponse.success("Message processed successfully", fallbackChat));
+                            }).join();
                 });
     }
     
@@ -189,6 +198,28 @@ public class ChatController {
     public ResponseEntity<ApiResponse<String>> testEndpoint() {
         log.info("Chat test endpoint called");
         return ResponseEntity.ok(ApiResponse.success("Chat API is working"));
+    }
+    
+    @PostMapping("/simple-send")
+    public CompletableFuture<ResponseEntity<ApiResponse<Chat>>> sendSimpleMessage(
+            @RequestParam Long farmerId,
+            @RequestParam String message,
+            @RequestParam(defaultValue = "GENERAL") String messageType) {
+        
+        log.info("Received simple chat message from farmer ID: {}", farmerId);
+        
+        return simpleChatService.sendMessage(farmerId, message, messageType)
+                .thenApply(chat -> ResponseEntity.ok(ApiResponse.success("Simple message processed successfully", chat)))
+                .exceptionally(throwable -> {
+                    log.error("Simple chat service failed: {}", throwable.getMessage());
+                    // Final fallback response
+                    Chat fallbackChat = new Chat();
+                    fallbackChat.setId(1L);
+                    fallbackChat.setUserMessage(message);
+                    fallbackChat.setAiResponse("Hello! I'm your AI farming assistant. I'm here to help you with agricultural questions. Please ask me about crops, irrigation, plant diseases, weather, or any farming-related topics.");
+                    fallbackChat.setMessageType(Chat.MessageType.valueOf(messageType.toUpperCase()));
+                    return ResponseEntity.ok(ApiResponse.success("Simple message processed successfully", fallbackChat));
+                });
     }
     
     @PostMapping("/disease-treatment")

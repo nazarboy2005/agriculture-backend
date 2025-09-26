@@ -38,8 +38,12 @@ public class EmailService {
     }
     
     public void sendEmailConfirmation(String to, String name, String confirmationToken) {
+        log.info("Attempting to send email confirmation to: {}", to);
+        log.info("Email enabled: {}, Mail sender present: {}", emailEnabled, mailSender.isPresent());
+        
         if (!emailEnabled || !mailSender.isPresent()) {
             log.warn("Email sending is disabled or mail sender not available. Skipping email confirmation for: {}", to);
+            System.out.println("EMAIL DEBUG: Email sending is disabled or mail sender not available");
             return;
         }
         
@@ -59,6 +63,7 @@ public class EmailService {
             
             mailSender.get().send(message);
             log.info("Email confirmation sent to: {}", to);
+            System.out.println("EMAIL DEBUG: Email confirmation successfully sent to: " + to);
             
         } catch (MessagingException e) {
             log.error("Failed to send email confirmation to: {} - Error: {}", to, e.getMessage());
