@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserSettingsDto {
+public class UserSettingsDTO {
     
     // Profile settings
     private String phone;

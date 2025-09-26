@@ -22,18 +22,18 @@ public class FarmerController {
     
     @PostMapping
     public ResponseEntity<ApiResponse<FarmerDto>> createFarmer(@Valid @RequestBody FarmerDto farmerDto) {
-        log.info("Creating farmer: {}", farmerDto.getName());
+        System.out.println("Creating farmer: " + farmerDto.getName());
         
         try {
             FarmerDto createdFarmer = farmerService.createFarmer(farmerDto);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.success("Farmer created successfully", createdFarmer));
         } catch (IllegalArgumentException e) {
-            log.error("Validation error creating farmer: {}", e.getMessage());
+            System.out.println("Validation error creating farmer: " + e.getMessage());
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Validation error: " + e.getMessage()));
         } catch (Exception e) {
-            log.error("Error creating farmer", e);
+            System.out.println("Error creating farmer: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Failed to create farmer: " + e.getMessage()));
         }
@@ -41,7 +41,7 @@ public class FarmerController {
     
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<FarmerDto>> getFarmerById(@PathVariable Long id) {
-        log.info("Fetching farmer with ID: {}", id);
+        System.out.println("Fetching farmer with ID: " + id);
         
         return farmerService.getFarmerById(id)
                 .map(farmer -> ResponseEntity.ok(ApiResponse.success(farmer)))
@@ -50,7 +50,7 @@ public class FarmerController {
     
     @GetMapping("/phone/{phone}")
     public ResponseEntity<ApiResponse<FarmerDto>> getFarmerByPhone(@PathVariable String phone) {
-        log.info("Fetching farmer with phone: {}", phone);
+        System.out.println("Fetching farmer with phone: " + phone);
         
         return farmerService.getFarmerByPhone(phone)
                 .map(farmer -> ResponseEntity.ok(ApiResponse.success(farmer)))
@@ -59,7 +59,7 @@ public class FarmerController {
     
     @GetMapping
     public ResponseEntity<ApiResponse<List<FarmerDto>>> getAllFarmers() {
-        log.info("Fetching all farmers");
+        System.out.println("Fetching all farmers");
         
         List<FarmerDto> farmers = farmerService.getAllFarmers();
         return ResponseEntity.ok(ApiResponse.success(farmers));
@@ -67,7 +67,7 @@ public class FarmerController {
     
     @GetMapping("/sms-opt-in")
     public ResponseEntity<ApiResponse<List<FarmerDto>>> getFarmersWithSmsOptIn() {
-        log.info("Fetching farmers with SMS opt-in");
+        System.out.println("Fetching farmers with SMS opt-in");
         
         List<FarmerDto> farmers = farmerService.getFarmersWithSmsOptIn();
         return ResponseEntity.ok(ApiResponse.success(farmers));
@@ -75,7 +75,7 @@ public class FarmerController {
     
     @GetMapping("/location/{locationName}")
     public ResponseEntity<ApiResponse<List<FarmerDto>>> getFarmersByLocation(@PathVariable String locationName) {
-        log.info("Fetching farmers by location: {}", locationName);
+        System.out.println("Fetching farmers by location: " + locationName);
         
         List<FarmerDto> farmers = farmerService.getFarmersByLocation(locationName);
         return ResponseEntity.ok(ApiResponse.success(farmers));
@@ -83,7 +83,7 @@ public class FarmerController {
     
     @GetMapping("/crop/{preferredCrop}")
     public ResponseEntity<ApiResponse<List<FarmerDto>>> getFarmersByCrop(@PathVariable String preferredCrop) {
-        log.info("Fetching farmers by crop: {}", preferredCrop);
+        System.out.println("Fetching farmers by crop: " + preferredCrop);
         
         List<FarmerDto> farmers = farmerService.getFarmersByCrop(preferredCrop);
         return ResponseEntity.ok(ApiResponse.success(farmers));
@@ -92,17 +92,17 @@ public class FarmerController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<FarmerDto>> updateFarmer(@PathVariable Long id, 
                                                              @Valid @RequestBody FarmerDto farmerDto) {
-        log.info("Updating farmer with ID: {}", id);
+        System.out.println("Updating farmer with ID: " + id);
         
         try {
             FarmerDto updatedFarmer = farmerService.updateFarmer(id, farmerDto);
             return ResponseEntity.ok(ApiResponse.success("Farmer updated successfully", updatedFarmer));
         } catch (IllegalArgumentException e) {
-            log.error("Error updating farmer: {}", e.getMessage());
+            System.out.println("Error updating farmer: " + e.getMessage());
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Error updating farmer: " + e.getMessage()));
         } catch (Exception e) {
-            log.error("Unexpected error updating farmer", e);
+            System.out.println("Unexpected error updating farmer: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Failed to update farmer: " + e.getMessage()));
         }
@@ -110,17 +110,17 @@ public class FarmerController {
     
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> deleteFarmer(@PathVariable Long id) {
-        log.info("Deleting farmer with ID: {}", id);
+        System.out.println("Deleting farmer with ID: " + id);
         
         try {
             farmerService.deleteFarmer(id);
             return ResponseEntity.ok(ApiResponse.success("Farmer deleted successfully", null));
         } catch (IllegalArgumentException e) {
-            log.error("Error deleting farmer: {}", e.getMessage());
+            System.out.println("Error deleting farmer: " + e.getMessage());
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error("Error deleting farmer: " + e.getMessage()));
         } catch (Exception e) {
-            log.error("Unexpected error deleting farmer", e);
+            System.out.println("Unexpected error deleting farmer: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.error("Failed to delete farmer: " + e.getMessage()));
         }
@@ -128,7 +128,7 @@ public class FarmerController {
     
     @GetMapping("/stats/total")
     public ResponseEntity<ApiResponse<Long>> getTotalFarmersCount() {
-        log.info("Fetching total farmers count");
+        System.out.println("Fetching total farmers count");
         
         Long count = farmerService.getTotalFarmersCount();
         return ResponseEntity.ok(ApiResponse.success(count));
@@ -136,7 +136,7 @@ public class FarmerController {
     
     @GetMapping("/stats/sms-opt-in")
     public ResponseEntity<ApiResponse<Long>> getFarmersWithSmsOptInCount() {
-        log.info("Fetching farmers with SMS opt-in count");
+        System.out.println("Fetching farmers with SMS opt-in count");
         
         Long count = farmerService.getFarmersWithSmsOptInCount();
         return ResponseEntity.ok(ApiResponse.success(count));

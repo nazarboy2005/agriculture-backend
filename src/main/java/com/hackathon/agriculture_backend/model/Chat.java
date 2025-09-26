@@ -30,6 +30,15 @@ public class Chat {
         return farmer != null ? farmer.getId() : null;
     }
     
+    // Setter for farmerId to match frontend expectations
+    public void setFarmerId(Long farmerId) {
+        if (farmerId != null) {
+            Farmer farmer = new Farmer();
+            farmer.setId(farmerId);
+            this.farmer = farmer;
+        }
+    }
+    
     @Column(name = "user_message", nullable = false, columnDefinition = "TEXT")
     private String userMessage;
     

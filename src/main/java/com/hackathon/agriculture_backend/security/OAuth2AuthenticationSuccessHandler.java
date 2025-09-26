@@ -37,7 +37,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String googleId = (String) attributes.get("sub");
         String profilePictureUrl = (String) attributes.get("picture");
         
-        log.info("OAuth2 authentication successful for user: {}", email);
+        System.out.println("OAuth2 authentication successful for user: " + email);
         
         // Check if user exists, if not create new user
         User user = userService.findByEmailOptional(email)
@@ -49,9 +49,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                     newUser.setProfilePictureUrl(profilePictureUrl);
                     newUser.setRole(User.Role.USER);
                     newUser.setIsEnabled(true);
-                    log.info("Creating OAuth2 user with role: {}", newUser.getRole());
+                    System.out.println("Creating OAuth2 user with role: " + newUser.getRole());
                     User savedUser = userService.save(newUser);
-                    log.info("OAuth2 user saved with role: {}", savedUser.getRole());
+                    System.out.println("OAuth2 user saved with role: " + savedUser.getRole());
                     return savedUser;
                 });
         

@@ -36,11 +36,11 @@ public class AlertService {
     // private String fromPhoneNumber;
     
     public AlertLog sendSmsAlert(Farmer farmer, String message, String alertType) {
-        log.info("Sending SMS alert to farmer: {} ({})", farmer.getName(), farmer.getPhone());
+        System.out.println("Sending SMS alert to farmer: " + farmer.getName() + " (" + farmer.getPhone() + ")");
         
         try {
             // Mock SMS sending - Twilio will be added later
-            log.info("MOCK SMS SENT to {}: {}", farmer.getPhone(), message);
+            System.out.println("MOCK SMS SENT to " + farmer.getPhone() + ": " + message);
             
             // Simulate SMS sending delay
             Thread.sleep(100);
@@ -54,12 +54,12 @@ public class AlertService {
             alertLog.setSentAt(Instant.now());
             
             AlertLog savedAlert = alertLogRepository.save(alertLog);
-            log.info("Mock SMS alert sent successfully. Message ID: MOCK-{}", System.currentTimeMillis());
+            System.out.println("Mock SMS alert sent successfully. Message ID: MOCK-" + System.currentTimeMillis());
             
             return savedAlert;
             
         } catch (Exception e) {
-            log.error("Failed to send mock SMS alert to farmer: {} - {}", farmer.getPhone(), e.getMessage());
+            System.out.println("Failed to send mock SMS alert to farmer: " + farmer.getPhone() + " - " + e.getMessage());
             
             // Log failed alert
             AlertLog alertLog = new AlertLog();
@@ -75,14 +75,14 @@ public class AlertService {
     }
     
     public AlertLog sendIrrigationRecommendationAlert(Farmer farmer, IrrigationRecommendation recommendation) {
-        log.info("Sending irrigation recommendation alert to farmer: {}", farmer.getName());
+        System.out.println("Sending irrigation recommendation alert to farmer: " + farmer.getName());
         
         String message = buildIrrigationMessage(farmer, recommendation);
         return sendSmsAlert(farmer, message, "IRRIGATION_RECOMMENDATION");
     }
     
     public AlertLog sendHeatAlert(Farmer farmer, Double temperature) {
-        log.info("Sending heat alert to farmer: {} for temperature: {}°C", farmer.getName(), temperature);
+        System.out.println("Sending heat alert to farmer: " + farmer.getName() + " for temperature: " + temperature + "°C");
         
         String message = String.format(
                 "🌡️ HEAT ALERT for %s!\n" +
@@ -99,7 +99,7 @@ public class AlertService {
     }
     
     public AlertLog sendTestAlert(Farmer farmer) {
-        log.info("Sending test alert to farmer: {}", farmer.getName());
+        System.out.println("Sending test alert to farmer: " + farmer.getName());
         
         String message = String.format(
                 "🧪 Test Alert from Smart Irrigation System\n" +

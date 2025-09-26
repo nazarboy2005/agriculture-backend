@@ -18,13 +18,13 @@ public class UserRoleFixer implements CommandLineRunner {
     
     @Override
     public void run(String... args) throws Exception {
-        log.info("Checking and fixing user roles...");
+        System.out.println("Checking and fixing user roles...");
         
         // Find all users with ADMIN role that shouldn't be admin
         List<User> adminUsers = userRepository.findByRole(User.Role.ADMIN);
         
         if (!adminUsers.isEmpty()) {
-            log.warn("Found {} users with ADMIN role", adminUsers.size());
+            System.out.println("Found " + adminUsers.size() + " users with ADMIN role");
             
             for (User user : adminUsers) {
                 // Only keep admin role for specific admin emails or first user
@@ -33,22 +33,22 @@ public class UserRoleFixer implements CommandLineRunner {
                                        userRepository.count() == 1;
                 
                 if (!shouldBeAdmin) {
-                    log.info("Converting user {} from ADMIN to USER role", user.getEmail());
+                    System.out.println("Converting user " + user.getEmail() + " from ADMIN to USER role");
                     user.setRole(User.Role.USER);
                     userRepository.save(user);
                 } else {
-                    log.info("Keeping admin role for user: {}", user.getEmail());
+                    System.out.println("Keeping admin role for user: " + user.getEmail());
                 }
             }
         }
         
         // Log all users and their roles
         List<User> allUsers = userRepository.findAll();
-        log.info("Current users in database:");
+        System.out.println("Current users in database:");
         for (User user : allUsers) {
-            log.info("User: {} - Role: {}", user.getEmail(), user.getRole());
+            System.out.println("User: " + user.getEmail() + " - Role: " + user.getRole());
         }
         
-        log.info("User role check completed");
+        System.out.println("User role check completed");
     }
 }

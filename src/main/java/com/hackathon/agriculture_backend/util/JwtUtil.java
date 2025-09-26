@@ -66,6 +66,13 @@ public class JwtUtil {
         return createToken(claims, email);
     }
     
+    public String generateToken(com.hackathon.agriculture_backend.model.User user) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", user.getId());
+        claims.put("role", user.getRole().toString());
+        return createToken(claims, user.getEmail());
+    }
+    
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
                 .setClaims(claims)
