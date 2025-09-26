@@ -448,6 +448,29 @@ public class AuthController {
         }
     }
     
+    @PostMapping("/test-email")
+    public ResponseEntity<ApiResponse<String>> testEmail(@RequestBody Map<String, String> request) {
+        try {
+            String email = request.get("email");
+            if (email == null || email.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Email is required"));
+            }
+            
+            log.info("Testing email functionality for: {}", email);
+            
+            // Test email sending
+            emailService.sendPasswordResetEmail(email, "Test User", "test-token-123");
+            
+            return ResponseEntity.ok(ApiResponse.success("Test email sent successfully to: " + email));
+            
+        } catch (Exception e) {
+            log.error("Error testing email: {}", e.getMessage());
+            return ResponseEntity.status(500)
+                    .body(ApiResponse.error("Email test failed: " + e.getMessage()));
+        }
+    }
+    
     @PostMapping("/update-password")
     public ResponseEntity<ApiResponse<String>> updatePassword(@RequestBody Map<String, String> request) {
         try {
