@@ -1,45 +1,38 @@
 @echo off
 echo ========================================
-echo ULTIMATE CORS DEPLOYMENT
+echo ULTIMATE CORS FIX DEPLOYMENT
 echo ========================================
-echo.
-echo This deploys the ULTIMATE CORS solution:
-echo - UltimateCorsConfig (dedicated CORS filter)
-echo - CorsHeaderAdvice (ResponseBodyAdvice override)
-echo - Multiple fallback mechanisms
-echo.
 
-echo [1/2] Committing ultimate CORS changes...
-git add .
-git commit -m "ULTIMATE CORS: Add UltimateCorsConfig and CorsHeaderAdvice for final CORS override"
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: Git commit failed!
-    pause
-    exit /b 1
-)
+echo.
+echo [1/4] Building with ULTIMATE CORS configuration...
+call mvnw.cmd clean package -DskipTests
 
-echo [2/2] Pushing ultimate CORS deployment...
-git push
 if %ERRORLEVEL% neq 0 (
-    echo ERROR: Git push failed!
-    echo Please check your git configuration and try again.
+    echo ERROR: Build failed!
     pause
     exit /b 1
 )
 
 echo.
+echo [2/4] Testing ULTIMATE CORS configuration...
+echo Testing preflight request...
+powershell -Command "try { $response = Invoke-WebRequest -Uri 'https://agriculture-backend-production.railway.app/api/v1/auth/register' -Method OPTIONS -Headers @{'Origin'='https://agriculture-frontend-two.vercel.app'; 'Access-Control-Request-Method'='POST'} -UseBasicParsing; Write-Host 'CORS Test: Status:' $response.StatusCode; Write-Host 'Headers:' $response.Headers } catch { Write-Host 'CORS Test: FAILED -' $_.Exception.Message }"
+
+echo.
+echo [3/4] Deploying ULTIMATE CORS fix to Railway...
+railway deploy
+
+echo.
+echo [4/4] Testing deployed ULTIMATE CORS fix...
+timeout /t 15 /nobreak >nul
+powershell -Command "try { $response = Invoke-WebRequest -Uri 'https://agriculture-backend-production.railway.app/api/v1/auth/register' -Method OPTIONS -Headers @{'Origin'='https://agriculture-frontend-two.vercel.app'; 'Access-Control-Request-Method'='POST'} -UseBasicParsing; Write-Host 'ULTIMATE CORS Test: Status:' $response.StatusCode; Write-Host 'Headers:' $response.Headers } catch { Write-Host 'ULTIMATE CORS Test: FAILED -' $_.Exception.Message }"
+
+echo.
 echo ========================================
-echo ULTIMATE CORS DEPLOYMENT TRIGGERED
+echo ULTIMATE CORS DEPLOYMENT COMPLETE!
 echo ========================================
 echo.
-echo This is the FINAL CORS solution with:
-echo 1. UltimateCorsConfig - Dedicated CORS filter
-echo 2. CorsHeaderAdvice - ResponseBodyAdvice override
-echo 3. Multiple fallback mechanisms
+echo The ultimate CORS fix should now override Railway's CORS injection.
+echo Test your frontend: https://agriculture-frontend-two.vercel.app
 echo.
-echo Look for these log messages:
-echo - "ULTIMATE CORS CONFIG - Creating ultimate CORS filter"
-echo - "CORS HEADER ADVICE - FORCING CORS HEADERS FOR"
-echo.
-echo This WILL override Railway's CORS!
 pause
