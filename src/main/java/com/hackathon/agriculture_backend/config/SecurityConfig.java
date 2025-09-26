@@ -57,6 +57,8 @@ public class SecurityConfig {
                 .requestMatchers("/v1/farmer-zones/**").permitAll() // Allow zone management for demo purposes
                 .requestMatchers("/v1/recommendations/**").permitAll() // Allow recommendations for demo purposes
                 .requestMatchers("/disease/**").permitAll() // Allow disease detection for demo purposes
+                .requestMatchers("/health/**").permitAll() // Allow health checks
+                .requestMatchers("/v1/settings/**").authenticated() // User settings require authentication
                 .requestMatchers("/v1/farmers/**").authenticated()
                 .requestMatchers("/v1/alerts/**").authenticated()
                 .requestMatchers("/v1/admin/**").hasRole("ADMIN")
