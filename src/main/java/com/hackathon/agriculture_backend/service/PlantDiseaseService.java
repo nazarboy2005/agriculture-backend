@@ -67,7 +67,14 @@ public class PlantDiseaseService {
         log.debug("Plant.id API request body: {}", requestBody);
 
         // Make API call
-        DetailedDiseaseDetectionResponse response = makeApiCall(requestBody, apiKey);
+        DetailedDiseaseDetectionResponse response;
+        try {
+            response = makeApiCall(requestBody, apiKey);
+        } catch (Exception e) {
+            log.error("Plant.id API call failed, using fallback response", e);
+            // Return a fallback response if API fails
+            response = createFallbackResponse();
+        }
         
         // Save to history (convert to old format for compatibility)
         DiseaseDetectionResponse oldFormatResponse = new DiseaseDetectionResponse(
@@ -288,6 +295,15 @@ public class PlantDiseaseService {
         return new DetailedDiseaseDetectionResponse(
             "No disease detected", 0.0, "Plant appears to be healthy",
             new ArrayList<>(), true, 1.0, "Healthy", true, 1.0
+        );
+    }
+    
+    private DetailedDiseaseDetectionResponse createFallbackResponse() {
+        return new DetailedDiseaseDetectionResponse(
+            "Unable to detect disease - Service temporarily unavailable",
+            0.0,
+            "Please try again later or contact support if the issue persists.",
+            new ArrayList<>(), false, 0.0, "Service Unavailable", true, 0.8
         );
     }
     

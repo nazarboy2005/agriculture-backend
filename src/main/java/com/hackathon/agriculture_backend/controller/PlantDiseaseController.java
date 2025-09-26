@@ -16,7 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/disease")
@@ -134,6 +136,15 @@ public class PlantDiseaseController {
     @GetMapping("/test")
     public ResponseEntity<String> testEndpoint() {
         return ResponseEntity.ok("Disease detection endpoint is working!");
+    }
+    
+    @GetMapping("/health")
+    public ResponseEntity<Map<String, Object>> healthCheck() {
+        Map<String, Object> health = new HashMap<>();
+        health.put("status", "UP");
+        health.put("service", "Plant Disease Detection");
+        health.put("timestamp", System.currentTimeMillis());
+        return ResponseEntity.ok(health);
     }
     
     private Long getUserIdFromAuthentication(Authentication authentication) {
